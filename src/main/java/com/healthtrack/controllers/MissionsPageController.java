@@ -4,6 +4,8 @@ import com.healthtrack.entities.MissionVolunteer;
 import com.healthtrack.services.MissionVolunteerService;
 import com.healthtrack.util.MissionMediaUtil;
 import com.healthtrack.util.PageType;
+import com.healthtrack.util.UiMessageUtil;
+import com.healthtrack.util.ValidationUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -88,6 +90,26 @@ public class MissionsPageController implements PageController, NavigablePageCont
 
     @FXML
     private void addMission() {
+        ValidationUtil.clearInvalid(titreField, descriptionField, lieuField, dateDebutPicker, dateFinPicker, statutField, photoField);
+        List<String> errors = ValidationUtil.validateMission(
+                titreField.getText(),
+                descriptionField.getText(),
+                lieuField.getText(),
+                dateDebutPicker.getValue(),
+                dateFinPicker.getValue(),
+                statutField.getText(),
+                photoField.getText()
+        );
+        if (ValidationUtil.isDuplicateMission(missionService.getAll(), 0, titreField.getText(), lieuField.getText(),
+                dateDebutPicker.getValue(), dateFinPicker.getValue())) {
+            errors.add("Une mission similaire existe deja avec le meme titre, lieu et periode.");
+        }
+        if (!errors.isEmpty()) {
+            markMissionInvalidFields();
+            markMissionDuplicateFieldsIfNeeded();
+            UiMessageUtil.showValidationErrors("Ajout mission", errors);
+            return;
+        }
         MissionVolunteer mission = buildMissionFromForm(new MissionVolunteer());
         missionService.ajouter(mission);
         refreshTable();
@@ -98,6 +120,27 @@ public class MissionsPageController implements PageController, NavigablePageCont
     private void updateMission() {
         MissionVolunteer mission = missionsTable.getSelectionModel().getSelectedItem();
         if (mission == null) {
+            UiMessageUtil.showInfo("Modification mission", "Selectionnez une mission a modifier.");
+            return;
+        }
+        ValidationUtil.clearInvalid(titreField, descriptionField, lieuField, dateDebutPicker, dateFinPicker, statutField, photoField);
+        List<String> errors = ValidationUtil.validateMission(
+                titreField.getText(),
+                descriptionField.getText(),
+                lieuField.getText(),
+                dateDebutPicker.getValue(),
+                dateFinPicker.getValue(),
+                statutField.getText(),
+                photoField.getText()
+        );
+        if (ValidationUtil.isDuplicateMission(missionService.getAll(), mission.getId(), titreField.getText(), lieuField.getText(),
+                dateDebutPicker.getValue(), dateFinPicker.getValue())) {
+            errors.add("Une autre mission similaire existe deja avec le meme titre, lieu et periode.");
+        }
+        if (!errors.isEmpty()) {
+            markMissionInvalidFields();
+            markMissionDuplicateFieldsIfNeeded(mission.getId());
+            UiMessageUtil.showValidationErrors("Modification mission", errors);
             return;
         }
         missionService.modifier(buildMissionFromForm(mission));
@@ -108,6 +151,7 @@ public class MissionsPageController implements PageController, NavigablePageCont
     private void deleteMission() {
         MissionVolunteer mission = missionsTable.getSelectionModel().getSelectedItem();
         if (mission == null) {
+            UiMessageUtil.showInfo("Suppression mission", "Selectionnez une mission a supprimer.");
             return;
         }
         missionService.supprimer(mission.getId());
@@ -140,6 +184,7 @@ public class MissionsPageController implements PageController, NavigablePageCont
     }
 
     private void clearForm() {
+        ValidationUtil.clearInvalid(titreField, descriptionField, lieuField, dateDebutPicker, dateFinPicker, statutField, photoField);
         titreField.clear();
         descriptionField.clear();
         lieuField.clear();
@@ -148,5 +193,31 @@ public class MissionsPageController implements PageController, NavigablePageCont
         statutField.setText("Ouverte");
         photoField.clear();
         missionsTable.getSelectionModel().clearSelection();
+    }
+
+    private void markMissionInvalidFields() {
+        ValidationUtil.markIfInvalid(titreField, titreField.getText() == null || titreField.getText().trim().length() < 4);
+        ValidationUtil.markIfInvalid(descriptionField, descriptionField.getText() == null || descriptionField.getText().trim().length() < 10);
+        ValidationUtil.markIfInvalid(lieuField, lieuField.getText() == null || lieuField.getText().trim().length() < 2);
+        ValidationUtil.markIfInvalid(dateDebutPicker, dateDebutPicker.getValue() == null);
+        ValidationUtil.markIfInvalid(dateFinPicker, dateFinPicker.getValue() == null
+                || (dateDebutPicker.getValue() != null && dateFinPicker.getValue() != null && dateFinPicker.getValue().isBefore(dateDebutPicker.getValue())));
+        ValidationUtil.markIfInvalid(statutField, statutField.getText() == null || statutField.getText().trim().length() < 3);
+        ValidationUtil.markIfInvalid(photoField, photoField.getText() != null && !photoField.getText().isBlank()
+                && !photoField.getText().toLowerCase().matches(".*\\.(png|jpg|jpeg|gif|webp)$"));
+    }
+
+    private void markMissionDuplicateFieldsIfNeeded() {
+        markMissionDuplicateFieldsIfNeeded(0);
+    }
+
+    private void markMissionDuplicateFieldsIfNeeded(int currentId) {
+        if (ValidationUtil.isDuplicateMission(missionService.getAll(), currentId, titreField.getText(), lieuField.getText(),
+                dateDebutPicker.getValue(), dateFinPicker.getValue())) {
+            ValidationUtil.markInvalid(titreField);
+            ValidationUtil.markInvalid(lieuField);
+            ValidationUtil.markInvalid(dateDebutPicker);
+            ValidationUtil.markInvalid(dateFinPicker);
+        }
     }
 }

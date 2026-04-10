@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.healthtrack.controllers.AdminMissionFormPageController"
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            styleClass="admin-scroll">
+    <content>
+        <VBox spacing="24.0" styleClass="admin-page-root">
+            <padding>
+                <Insets top="24.0" right="24.0" bottom="24.0" left="24.0"/>
+            </padding>
+            <children>
+                <VBox spacing="8.0" styleClass="admin-page-banner">
+                    <children>
+                        <Label fx:id="breadcrumbLabel" styleClass="admin-breadcrumb"/>
+                        <Label fx:id="pageTitleLabel" styleClass="admin-page-title"/>
+                    </children>
+                </VBox>
+                <VBox maxWidth="860.0" spacing="18.0" styleClass="admin-form-shell">
+                    <children>
+                        <VBox spacing="6.0">
+                            <children>
+                                <Label fx:id="formTitleLabel" styleClass="admin-form-title"/>
+                                <Label text="Remplissez les informations ci-dessous pour publier une nouvelle offre." styleClass="admin-top-subtitle"/>
+                            </children>
+                        </VBox>
+                        <VBox spacing="14.0" styleClass="admin-form-section">
+                            <children>
+                                <Label text="INFORMATIONS GÉNÉRALES" styleClass="admin-form-section-title"/>
+                                <Label text="Image de présentation" styleClass="field-label"/>
+                                <HBox spacing="12.0">
+                                    <children>
+                                        <Button fx:id="photoButton" text="Choisir un fichier" onAction="#choosePhoto" styleClass="admin-light-button"/>
+                                        <TextField fx:id="photoField" HBox.hgrow="ALWAYS"/>
+                                    </children>
+                                </HBox>
+                                <Label text="Titre de la mission" styleClass="field-label"/>
+                                <TextField fx:id="titreField" promptText="Ex: Distribution de repas..."/>
+                                <Label text="Description détaillée" styleClass="field-label"/>
+                                <TextArea fx:id="descriptionArea" promptText="Décrivez les tâches et objectifs..." prefRowCount="4" wrapText="true"/>
+                            </children>
+                        </VBox>
+                        <VBox spacing="14.0" styleClass="admin-form-section">
+                            <children>
+                                <Label text="LOGISTIQUE" styleClass="admin-form-section-title"/>
+                                <GridPane hgap="22.0" vgap="14.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS"/>
+                                        <ColumnConstraints hgrow="ALWAYS"/>
+                                    </columnConstraints>
+                                    <children>
+                                        <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                            <children>
+                                                <Label text="Lieu / Ville" styleClass="field-label"/>
+                                                <TextField fx:id="lieuField" promptText="Tunis, Ariana..."/>
+                                            </children>
+                                        </VBox>
+                                        <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                            <children>
+                                                <Label text="Statut actuel" styleClass="field-label"/>
+                                                <TextField fx:id="statutField"/>
+                                            </children>
+                                        </VBox>
+                                        <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                            <children>
+                                                <Label text="Date de début" styleClass="field-label"/>
+                                                <DatePicker fx:id="dateDebutPicker"/>
+                                            </children>
+                                        </VBox>
+                                        <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                            <children>
+                                                <Label text="Date de fin" styleClass="field-label"/>
+                                                <DatePicker fx:id="dateFinPicker"/>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </GridPane>
+                            </children>
+                        </VBox>
+                        <HBox alignment="CENTER_RIGHT" spacing="14.0">
+                            <children>
+                                <Button text="Annuler" onAction="#cancel" styleClass="admin-text-button"/>
+                                <Button text="Enregistrer la mission" onAction="#saveMission" styleClass="admin-orange-button"/>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+    </content>
+</ScrollPane>

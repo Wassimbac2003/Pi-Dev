@@ -1,5 +1,6 @@
 package com.healthtrack;
 
+import com.healthtrack.util.AppNavigator;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -12,6 +13,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        AppNavigator.init(stage);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-view.fxml"));
         BorderPane root = loader.load();
 

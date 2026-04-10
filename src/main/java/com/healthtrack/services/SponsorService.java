@@ -17,11 +17,16 @@ public class SponsorService implements IService<Sponsor> {
     @Override
     public void ajouter(Sponsor sponsor) {
         String req = "INSERT INTO sponsor (nom_societe, contact_email, logo) VALUES (?,?,?)";
-        try (PreparedStatement statement = connection.prepareStatement(req)) {
+        try (PreparedStatement statement = connection.prepareStatement(req, PreparedStatement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, sponsor.getNomSociete());
             statement.setString(2, sponsor.getContactEmail());
             statement.setString(3, sponsor.getLogo());
             statement.executeUpdate();
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    sponsor.setId(generatedKeys.getInt(1));
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -1,9 +1,12 @@
 package com.healthtrack.controllers;
 
 import com.healthtrack.entities.Volunteer;
+import com.healthtrack.services.MissionVolunteerService;
 import com.healthtrack.services.VolunteerService;
 import com.healthtrack.tools.JsonUtil;
 import com.healthtrack.util.PageType;
+import com.healthtrack.util.UiMessageUtil;
+import com.healthtrack.util.ValidationUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
@@ -28,6 +31,7 @@ public class VolunteersPageController implements PageController, NavigablePageCo
     @FXML private TextField disponibilitesField;
 
     private final VolunteerService volunteerService = new VolunteerService();
+    private final MissionVolunteerService missionService = new MissionVolunteerService();
 
     @FXML
     private void initialize() {
@@ -62,6 +66,24 @@ public class VolunteersPageController implements PageController, NavigablePageCo
 
     @FXML
     private void addVolunteer() {
+        ValidationUtil.clearInvalid(motivationField, telephoneField, statutField, userIdField, missionIdField, disponibilitesField);
+        int missionId = parseInt(missionIdField.getText());
+        var errors = ValidationUtil.validateVolunteer(
+                motivationField.getText(),
+                telephoneField.getText(),
+                statutField.getText(),
+                parseInt(userIdField.getText()),
+                missionId,
+                disponibilitesField.getText()
+        );
+        if (missionId > 0 && missionService.getOneById(missionId) == null) {
+            errors.add("La mission referencee n'existe pas.");
+        }
+        if (!errors.isEmpty()) {
+            markVolunteerInvalidFields();
+            UiMessageUtil.showValidationErrors("Ajout volontaire", errors);
+            return;
+        }
         Volunteer volunteer = buildVolunteer(new Volunteer());
         volunteerService.ajouter(volunteer);
         refreshTable();
@@ -72,6 +94,25 @@ public class VolunteersPageController implements PageController, NavigablePageCo
     private void updateVolunteer() {
         Volunteer volunteer = volunteersTable.getSelectionModel().getSelectedItem();
         if (volunteer == null) {
+            UiMessageUtil.showInfo("Modification volontaire", "Selectionnez un volontaire a modifier.");
+            return;
+        }
+        ValidationUtil.clearInvalid(motivationField, telephoneField, statutField, userIdField, missionIdField, disponibilitesField);
+        int missionId = parseInt(missionIdField.getText());
+        var errors = ValidationUtil.validateVolunteer(
+                motivationField.getText(),
+                telephoneField.getText(),
+                statutField.getText(),
+                parseInt(userIdField.getText()),
+                missionId,
+                disponibilitesField.getText()
+        );
+        if (missionId > 0 && missionService.getOneById(missionId) == null) {
+            errors.add("La mission referencee n'existe pas.");
+        }
+        if (!errors.isEmpty()) {
+            markVolunteerInvalidFields();
+            UiMessageUtil.showValidationErrors("Modification volontaire", errors);
             return;
         }
         volunteerService.modifier(buildVolunteer(volunteer));
@@ -82,6 +123,7 @@ public class VolunteersPageController implements PageController, NavigablePageCo
     private void deleteVolunteer() {
         Volunteer volunteer = volunteersTable.getSelectionModel().getSelectedItem();
         if (volunteer == null) {
+            UiMessageUtil.showInfo("Suppression volontaire", "Selectionnez un volontaire a supprimer.");
             return;
         }
         volunteerService.supprimer(volunteer.getId());
@@ -120,6 +162,7 @@ public class VolunteersPageController implements PageController, NavigablePageCo
     }
 
     private void clearForm() {
+        ValidationUtil.clearInvalid(motivationField, telephoneField, statutField, userIdField, missionIdField, disponibilitesField);
         motivationField.clear();
         telephoneField.clear();
         statutField.setText("En attente");
@@ -127,5 +170,15 @@ public class VolunteersPageController implements PageController, NavigablePageCo
         missionIdField.clear();
         disponibilitesField.clear();
         volunteersTable.getSelectionModel().clearSelection();
+    }
+
+    private void markVolunteerInvalidFields() {
+        ValidationUtil.markIfInvalid(motivationField, motivationField.getText() == null || motivationField.getText().trim().length() < 10);
+        ValidationUtil.markIfInvalid(telephoneField, telephoneField.getText() == null
+                || !telephoneField.getText().replaceAll("\\s+", "").matches("^(\\+\\d{1,3})?\\d{8,14}$"));
+        ValidationUtil.markIfInvalid(statutField, statutField.getText() == null || statutField.getText().trim().length() < 3);
+        ValidationUtil.markIfInvalid(userIdField, parseInt(userIdField.getText()) <= 0);
+        ValidationUtil.markIfInvalid(missionIdField, parseInt(missionIdField.getText()) <= 0 || missionService.getOneById(parseInt(missionIdField.getText())) == null);
+        ValidationUtil.markIfInvalid(disponibilitesField, disponibilitesField.getText() == null || disponibilitesField.getText().isBlank());
     }
 }

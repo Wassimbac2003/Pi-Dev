@@ -1,6 +1,7 @@
 package com.healthtrack.controllers;
 
 import com.healthtrack.entities.MissionVolunteer;
+import com.healthtrack.util.AppNavigator;
 import com.healthtrack.util.PageType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -62,7 +63,7 @@ public class MainController {
 
     @FXML
     public void showLinksPage() {
-        activatePage(linksButton, PageType.LINKS, "Backoffice", "/fxml/sponsor-links-page.fxml");
+        AppNavigator.switchRoot("/fxml/admin-main-view.fxml");
     }
 
     @FXML

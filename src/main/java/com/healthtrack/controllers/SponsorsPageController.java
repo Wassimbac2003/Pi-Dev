@@ -3,6 +3,8 @@ package com.healthtrack.controllers;
 import com.healthtrack.entities.Sponsor;
 import com.healthtrack.services.SponsorService;
 import com.healthtrack.util.PageType;
+import com.healthtrack.util.UiMessageUtil;
+import com.healthtrack.util.ValidationUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
@@ -52,6 +54,17 @@ public class SponsorsPageController implements PageController, NavigablePageCont
 
     @FXML
     private void addSponsor() {
+        ValidationUtil.clearInvalid(nomField, emailField, logoField);
+        var errors = ValidationUtil.validateSponsor(nomField.getText(), emailField.getText(), logoField.getText(), false, 0);
+        if (ValidationUtil.isDuplicateSponsor(sponsorService.getAll(), 0, nomField.getText(), emailField.getText())) {
+            errors.add("Un sponsor avec ce nom ou cet email existe deja.");
+        }
+        if (!errors.isEmpty()) {
+            markSponsorInvalidFields();
+            markSponsorDuplicateFieldsIfNeeded();
+            UiMessageUtil.showValidationErrors("Ajout sponsor", errors);
+            return;
+        }
         Sponsor sponsor = buildSponsor(new Sponsor());
         sponsorService.ajouter(sponsor);
         refreshTable();
@@ -62,6 +75,18 @@ public class SponsorsPageController implements PageController, NavigablePageCont
     private void updateSponsor() {
         Sponsor sponsor = sponsorsTable.getSelectionModel().getSelectedItem();
         if (sponsor == null) {
+            UiMessageUtil.showInfo("Modification sponsor", "Selectionnez un sponsor a modifier.");
+            return;
+        }
+        ValidationUtil.clearInvalid(nomField, emailField, logoField);
+        var errors = ValidationUtil.validateSponsor(nomField.getText(), emailField.getText(), logoField.getText(), false, 0);
+        if (ValidationUtil.isDuplicateSponsor(sponsorService.getAll(), sponsor.getId(), nomField.getText(), emailField.getText())) {
+            errors.add("Un autre sponsor avec ce nom ou cet email existe deja.");
+        }
+        if (!errors.isEmpty()) {
+            markSponsorInvalidFields();
+            markSponsorDuplicateFieldsIfNeeded(sponsor.getId());
+            UiMessageUtil.showValidationErrors("Modification sponsor", errors);
             return;
         }
         sponsorService.modifier(buildSponsor(sponsor));
@@ -72,6 +97,7 @@ public class SponsorsPageController implements PageController, NavigablePageCont
     private void deleteSponsor() {
         Sponsor sponsor = sponsorsTable.getSelectionModel().getSelectedItem();
         if (sponsor == null) {
+            UiMessageUtil.showInfo("Suppression sponsor", "Selectionnez un sponsor a supprimer.");
             return;
         }
         sponsorService.supprimer(sponsor.getId());
@@ -96,9 +122,29 @@ public class SponsorsPageController implements PageController, NavigablePageCont
     }
 
     private void clearForm() {
+        ValidationUtil.clearInvalid(nomField, emailField, logoField);
         nomField.clear();
         emailField.clear();
         logoField.clear();
         sponsorsTable.getSelectionModel().clearSelection();
+    }
+
+    private void markSponsorInvalidFields() {
+        ValidationUtil.markIfInvalid(nomField, nomField.getText() == null || nomField.getText().trim().length() < 2);
+        ValidationUtil.markIfInvalid(emailField, emailField.getText() == null
+                || !emailField.getText().trim().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"));
+        ValidationUtil.markIfInvalid(logoField, logoField.getText() != null && !logoField.getText().isBlank()
+                && !logoField.getText().toLowerCase().matches(".*\\.(png|jpg|jpeg|gif|webp)$"));
+    }
+
+    private void markSponsorDuplicateFieldsIfNeeded() {
+        markSponsorDuplicateFieldsIfNeeded(0);
+    }
+
+    private void markSponsorDuplicateFieldsIfNeeded(int currentId) {
+        if (ValidationUtil.isDuplicateSponsor(sponsorService.getAll(), currentId, nomField.getText(), emailField.getText())) {
+            ValidationUtil.markInvalid(nomField);
+            ValidationUtil.markInvalid(emailField);
+        }
     }
 }
