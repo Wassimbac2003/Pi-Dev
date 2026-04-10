@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="Controllers.AdminDispoController"
+            fitToWidth="true"
+            style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+
+    <VBox spacing="20" style="-fx-background-color: #f0f4f8;">
+
+        <!-- Bouton Retour -->
+        <Button fx:id="btnRetourRdv" text="📋 Consulter les rendez-vous"
+                style="-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 12 25; -fx-cursor: hand;"/>
+
+        <!-- Stats -->
+        <HBox spacing="15">
+            <HBox spacing="12" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"
+                  style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);">
+                <Label text="📅" style="-fx-font-size: 24; -fx-background-color: #e3f2fd; -fx-background-radius: 10; -fx-padding: 10;"/>
+                <VBox spacing="3">
+                    <Label text="AUJOURD'HUI" style="-fx-font-size: 11; -fx-text-fill: #999; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblTodayCount" text="0 RDV" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                </VBox>
+            </HBox>
+
+            <HBox spacing="12" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"
+                  style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);">
+                <Label text="⏳" style="-fx-font-size: 24; -fx-background-color: #fff3e0; -fx-background-radius: 10; -fx-padding: 10;"/>
+                <VBox spacing="3">
+                    <Label text="EN ATTENTE" style="-fx-font-size: 11; -fx-text-fill: #999; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblPendingCount" text="0 Demandes" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                </VBox>
+            </HBox>
+
+            <HBox spacing="12" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"
+                  style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);">
+                <Label text="✅" style="-fx-font-size: 24; -fx-background-color: #e8f5e9; -fx-background-radius: 10; -fx-padding: 10;"/>
+                <VBox spacing="3">
+                    <Label text="TERMINÉS" style="-fx-font-size: 11; -fx-text-fill: #999; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblDoneCount" text="0 Consultations" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                </VBox>
+            </HBox>
+        </HBox>
+
+        <!-- Calendrier complet dans une VBox -->
+        <VBox spacing="15"
+              style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);">
+
+            <!-- Navigation -->
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <HBox spacing="0">
+                    <Button fx:id="btnPrev" text="‹"
+                            style="-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-font-size: 16; -fx-background-radius: 8 0 0 8; -fx-cursor: hand; -fx-padding: 8 15;"/>
+                    <Button fx:id="btnNext" text="›"
+                            style="-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-font-size: 16; -fx-background-radius: 0 8 8 0; -fx-cursor: hand; -fx-padding: 8 15;"/>
+                </HBox>
+                <Button fx:id="btnToday" text="Today"
+                        style="-fx-background-color: #e0e0e0; -fx-text-fill: #555; -fx-font-size: 13; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 8 18;"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label fx:id="lblMoisAnnee" text="avril 2026"
+                       style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <HBox spacing="0">
+                    <Button text="Month"
+                            style="-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-font-size: 12; -fx-background-radius: 8 0 0 8; -fx-padding: 8 15; -fx-cursor: hand;"/>
+                    <Button text="Week"
+                            style="-fx-background-color: #e0e0e0; -fx-text-fill: #555; -fx-font-size: 12; -fx-background-radius: 0; -fx-padding: 8 15; -fx-cursor: hand;"/>
+                    <Button text="Day"
+                            style="-fx-background-color: #e0e0e0; -fx-text-fill: #555; -fx-font-size: 12; -fx-background-radius: 0 8 8 0; -fx-padding: 8 15; -fx-cursor: hand;"/>
+                </HBox>
+            </HBox>
+
+            <!-- Header jours -->
+            <HBox style="-fx-border-color: #eee; -fx-border-width: 0 0 1 0;">
+                <Label text="lun." prefWidth="170" alignment="CENTER" style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 12;"/>
+                <Label text="mar." prefWidth="170" alignment="CENTER" style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 12;"/>
+                <Label text="mer." prefWidth="170" alignment="CENTER" style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 12;"/>
+                <Label text="jeu." prefWidth="170" alignment="CENTER" style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 12;"/>
+                <Label text="ven." prefWidth="170" alignment="CENTER" style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 12;"/>
+                <Label text="sam." prefWidth="170" alignment="CENTER" style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 12;"/>
+                <Label text="dim." prefWidth="170" alignment="CENTER" style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 12;"/>
+            </HBox>
+
+            <!-- Grille du calendrier -->
+            <GridPane fx:id="calendarGrid" hgap="0" vgap="0"/>
+        </VBox>
+
+    </VBox>
+</ScrollPane>
