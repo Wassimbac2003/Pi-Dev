@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.healthtrack.controllers.BenevolatPageController"
+            styleClass="page-scroll">
+    <content>
+        <VBox spacing="22.0" styleClass="content-wrapper">
+            <padding>
+                <Insets top="22.0"/>
+            </padding>
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="search-strip">
+                    <children>
+                        <TextField fx:id="searchField" promptText="Rechercher une mission (titre, lieu...)" HBox.hgrow="ALWAYS" styleClass="search-field"/>
+                        <Button text="Mes candidatures" onAction="#openVolunteersPage" styleClass="ghost-button"/>
+                    </children>
+                </HBox>
+                <VBox spacing="6.0" styleClass="hero-banner">
+                    <children>
+                        <Label text="Donnez de votre temps, sauvez des vies." styleClass="hero-title"/>
+                        <Label text="Rejoignez notre reseau de volontaires." styleClass="hero-subtitle"/>
+                    </children>
+                </VBox>
+                <VBox spacing="18.0" styleClass="card-panel">
+                    <children>
+                        <HBox alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="Recommandations pour vous" styleClass="card-title"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label text="IA Matching" styleClass="soft-pill"/>
+                            </children>
+                        </HBox>
+                        <HBox fx:id="recommendationsRow" spacing="14.0" styleClass="recommendations-row"/>
+                    </children>
+                </VBox>
+                <VBox spacing="16.0">
+                    <children>
+                        <Label fx:id="countLabel" styleClass="missions-count"/>
+                        <TilePane fx:id="missionsGrid" hgap="20.0" vgap="20.0" prefColumns="2" prefTileWidth="360.0" styleClass="missions-grid"/>
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+    </content>
+</ScrollPane>

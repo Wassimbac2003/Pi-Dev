@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.healthtrack.controllers.SponsorLinksPageController"
+            styleClass="page-scroll">
+    <content>
+        <VBox spacing="22.0" styleClass="content-wrapper">
+            <padding>
+                <Insets top="22.0"/>
+            </padding>
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="search-strip">
+                    <children>
+                        <TextField promptText="Rechercher un lien..." HBox.hgrow="ALWAYS" styleClass="search-field"/>
+                        <Button text="Mes candidatures" styleClass="ghost-button"/>
+                    </children>
+                </HBox>
+                <VBox spacing="6.0" styleClass="hero-banner">
+                    <children>
+                        <Label text="Gardez vos partenariats bien relies." styleClass="hero-title"/>
+                        <Label text="Visualisez rapidement les associations entre sponsors et missions." styleClass="hero-subtitle"/>
+                    </children>
+                </VBox>
+                <VBox spacing="18.0" styleClass="card-panel">
+                    <children>
+                        <Label text="Liens sponsor - mission" styleClass="card-title"/>
+                        <TableView fx:id="linksTable" styleClass="data-table">
+                            <columns>
+                                <TableColumn fx:id="linkColumn" text="Sponsor -> Mission"/>
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
+                <VBox spacing="18.0" styleClass="card-panel">
+                    <children>
+                        <Label text="Associer un sponsor" styleClass="card-title"/>
+                        <GridPane hgap="16.0" vgap="16.0" styleClass="form-grid">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+                            <children>
+                                <VBox spacing="8.0" styleClass="field-block" GridPane.rowIndex="0" GridPane.columnIndex="0">
+                                    <children>
+                                        <Label text="Sponsor" styleClass="field-label"/>
+                                        <ComboBox fx:id="sponsorBox"/>
+                                    </children>
+                                </VBox>
+                                <VBox spacing="8.0" styleClass="field-block" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                                    <children>
+                                        <Label text="Mission" styleClass="field-label"/>
+                                        <ComboBox fx:id="missionBox"/>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </GridPane>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="action-row">
+                            <children>
+                                <Button text="Actualiser" onAction="#refreshData" styleClass="action-button secondary-button"/>
+                                <Button text="Ajouter lien" onAction="#addLink" styleClass="action-button primary-button"/>
+                                <Button text="Supprimer lien" onAction="#deleteLink" styleClass="action-button danger-button"/>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+    </content>
+</ScrollPane>

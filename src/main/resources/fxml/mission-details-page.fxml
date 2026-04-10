@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.healthtrack.controllers.MissionDetailsPageController"
+            styleClass="page-scroll">
+    <content>
+        <VBox spacing="22.0" styleClass="content-wrapper">
+            <padding>
+                <Insets top="22.0"/>
+            </padding>
+            <children>
+                <Button text="Retour aux missions" onAction="#goBack" styleClass="back-link"/>
+                <HBox spacing="22.0" alignment="TOP_LEFT">
+                    <children>
+                        <VBox spacing="22.0" HBox.hgrow="ALWAYS">
+                            <children>
+                                <StackPane fx:id="imageCard" minHeight="300.0" styleClass="detail-image-card">
+                                    <children>
+                                        <Label fx:id="locationBadge" styleClass="detail-location-badge"/>
+                                    </children>
+                                </StackPane>
+                                <VBox spacing="18.0" styleClass="card-panel">
+                                    <children>
+                                        <Label fx:id="missionTitleLabel" styleClass="detail-mission-title"/>
+                                        <HBox spacing="18.0">
+                                            <children>
+                                                <Label fx:id="dateMetaLabel" styleClass="detail-meta"/>
+                                                <Label fx:id="statusMetaLabel" styleClass="detail-meta"/>
+                                            </children>
+                                        </HBox>
+                                        <Separator/>
+                                        <Label text="A propos de la mission" styleClass="detail-section-title"/>
+                                        <Label fx:id="descriptionLabel" wrapText="true" styleClass="detail-description"/>
+                                    </children>
+                                </VBox>
+                                <VBox spacing="8.0" styleClass="card-panel interest-card">
+                                    <children>
+                                        <Label text="Cette mission vous interesse ?" styleClass="interest-title"/>
+                                        <Label text="Donnez votre avis ou ajoutez-la a vos favoris." styleClass="interest-text"/>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+                        <VBox spacing="14.0" prefWidth="310.0" styleClass="card-panel participation-card">
+                            <children>
+                                <Label text="Participer" styleClass="card-title"/>
+                                <Label text="Rejoignez l'equipe et faites la difference." styleClass="recommendation-meta"/>
+                                <Button fx:id="proceedButton" text="Je postule maintenant !" onAction="#openApplication" styleClass="action-button primary-button detail-apply-button"/>
+                                <Label text="Aide IA pour cette mission" styleClass="support-pill"/>
+                                <Label text="Candidature simplifiee et securisee" styleClass="tiny-muted"/>
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </content>
+</ScrollPane>
