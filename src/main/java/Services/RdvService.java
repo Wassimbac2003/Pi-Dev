@@ -63,6 +63,9 @@ public class RdvService implements ICrud<rdv> {
         Statement st = connection.createStatement();
         ResultSet rs = st.executeQuery(sql);
         while (rs.next()) {
+            if (isIncompleteRow(rs)) {
+                continue;
+            }
             rdv r = new rdv(
                     rs.getInt("id"),
                     rs.getString("date"),
@@ -79,6 +82,20 @@ public class RdvService implements ICrud<rdv> {
         }
         return list;
     }
+
+    private boolean isIncompleteRow(ResultSet rs) throws SQLException {
+        return isBlank(rs.getString("date"))
+                || isBlank(rs.getString("hdebut"))
+                || isBlank(rs.getString("hfin"))
+                || isBlank(rs.getString("statut"))
+                || isBlank(rs.getString("motif"))
+                || isBlank(rs.getString("medecin"));
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
     public void updateStatut(int id, String statut) throws SQLException {
         String sql = "UPDATE rdv SET statut=? WHERE id=?";
         PreparedStatement ps = connection.prepareStatement(sql);
