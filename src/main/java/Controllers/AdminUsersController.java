@@ -14,47 +14,6 @@ import javafx.scene.layout.VBox;
 
 import java.util.List;
 import java.util.Objects;
-
-public class AdminUsersController {
-
-    @FXML
-    private TilePane usersGrid;
-    @FXML
-    private Label countLabel;
-    @FXML
-    private Label selectedUserLabel;
-    @FXML
-    private TextField emailField;
-    @FXML
-    private TextField nomField;
-    @FXML
-    private TextField prenomField;
-    @FXML
-    private TextField telephoneField;
-    @FXML
-    private TextField adresseField;
-    @FXML
-    private TextField verificationStatusField;
-    @FXML
-    private ComboBox<String> roleCombo;
-    @FXML
-    private CheckBox verifiedCheckBox;
-    @FXML
-    private Button updateButton;
-    @FXML
-    private Button deleteButton;
-
-    private final UserService userService = new UserService();
-    private List<User> users = List.of();
-    private User selectedUser;
-
-    @FXML
-    public void initialize() {
-        roleCombo.getItems().setAll("ROLE_ADMIN", "ROLE_MEDECIN", "ROLE_PATIENT");
-        clearSelection();
-        refreshUsers();
-    }
-
     @FXML
     public void refreshUsers() {
         users = userService.findAll();
