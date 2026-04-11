@@ -26,5 +26,8 @@ bin/
 ### VS Code ###
 .vscode/
 
+### Build ###
+target/
+
 ### Mac OS ###
 .DS_Store
