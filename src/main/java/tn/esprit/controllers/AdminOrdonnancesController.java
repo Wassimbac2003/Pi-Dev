@@ -109,25 +109,7 @@ public class AdminOrdonnancesController {
         reloadMaster();
     }
 
-    private void reloadPatientFilterItems() {
-        User sel = patientFilter != null ? patientFilter.getSelectionModel().getSelectedItem() : null;
-        ObservableList<User> items = FXCollections.observableArrayList();
-        items.add(ALL_PATIENTS);
-        items.addAll(userService.listPatientsRolePatient());
-        patientFilter.setItems(items);
-        if (sel != null && items.stream().anyMatch(u -> u.getId() == sel.getId())) {
-            items.stream().filter(u -> u.getId() == sel.getId()).findFirst()
-                    .ifPresent(u -> patientFilter.getSelectionModel().select(u));
-        } else {
-            patientFilter.getSelectionModel().selectFirst();
-        }
-    }
-
-    private void reloadMaster() {
-        master.setAll(service.listAll());
-        reloadPatientFilterItems();
-        refreshView();
-    }
+    
 
     private void refreshView() {
         String q = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);

@@ -316,3 +316,13 @@ public class AdminMedicamentsController {
         reloadMaster();
     }
 
+    private static String safe(TextField t) {
+        return t.getText() != null ? t.getText().trim() : "";
+    }
+
+    private static void alert(Alert.AlertType type, String msg) {
+        Alert a = new Alert(type, msg, ButtonType.OK);
+        UiTheme.applyDialog(a);
+        a.showAndWait();
+    }
+}
