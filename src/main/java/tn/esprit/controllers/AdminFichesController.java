@@ -63,7 +63,13 @@ public class AdminFichesController {
     private final ObservableList<Fiche> master = FXCollections.observableArrayList();
 
     @FXML
-
+    private void initialize() {
+        sortCombo.setItems(FXCollections.observableArrayList(
+                "Date (récent → ancien)",
+                "Date (ancien → récent)",
+                "Plus récentes d’abord",
+                "Libellé (A → Z)"
+        ));
         sortCombo.getSelectionModel().selectFirst();
         graviteFilter.setItems(FXCollections.observableArrayList("Toutes"));
         grpFilter.setItems(FXCollections.observableArrayList("Tous"));
