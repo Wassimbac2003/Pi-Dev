@@ -6,6 +6,8 @@ import com.healthtrack.services.VolunteerService;
 import com.healthtrack.tools.JsonUtil;
 import com.healthtrack.util.AppConstants;
 import com.healthtrack.util.MissionMediaUtil;
+import com.healthtrack.util.UiMessageUtil;
+import com.healthtrack.util.ValidationUtil;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -50,6 +52,9 @@ public class MissionApplicationPageController implements PageController {
     @FXML
     private void submitApplication() {
         if (mission == null || hasAlreadyApplied()) {
+            if (mission != null) {
+                UiMessageUtil.showInfo("Candidature", "Vous avez deja postule a cette mission.");
+            }
             return;
         }
 
@@ -68,6 +73,23 @@ public class MissionApplicationPageController implements PageController {
         }
         if (weekendAfternoonBox.isSelected()) {
             disponibilites.add("Week-end (Apres-midi)");
+        }
+
+        ValidationUtil.clearInvalid(motivationArea, phoneField,
+                morningWeekBox, afternoonWeekBox, eveningWeekBox, weekendMorningBox, weekendAfternoonBox);
+        var errors = ValidationUtil.validateApplication(motivationArea.getText(), phoneField.getText(), disponibilites);
+        if (!errors.isEmpty()) {
+            boolean noAvailability = disponibilites.isEmpty();
+            ValidationUtil.markIfInvalid(motivationArea, motivationArea.getText() == null || motivationArea.getText().trim().length() < 15);
+            ValidationUtil.markIfInvalid(phoneField, phoneField.getText() == null
+                    || !phoneField.getText().replaceAll("\\s+", "").matches("^(\\+\\d{1,3})?\\d{8,14}$"));
+            ValidationUtil.markIfInvalid(morningWeekBox, noAvailability);
+            ValidationUtil.markIfInvalid(afternoonWeekBox, noAvailability);
+            ValidationUtil.markIfInvalid(eveningWeekBox, noAvailability);
+            ValidationUtil.markIfInvalid(weekendMorningBox, noAvailability);
+            ValidationUtil.markIfInvalid(weekendAfternoonBox, noAvailability);
+            UiMessageUtil.showValidationErrors("Candidature", errors);
+            return;
         }
 
         Volunteer volunteer = new Volunteer();

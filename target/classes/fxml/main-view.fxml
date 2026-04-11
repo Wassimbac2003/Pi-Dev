@@ -27,7 +27,7 @@
                     </VBox.margin>
                 </Label>
                 <Button fx:id="dashboardButton" text="Tableau de Bord" styleClass="nav-button" maxWidth="1.7976931348623157E308" alignment="CENTER_LEFT" onAction="#showMissionsPage"/>
-                <Button fx:id="meetingButton" text="Rendez-vous" styleClass="nav-button" maxWidth="1.7976931348623157E308" alignment="CENTER_LEFT" onAction="#showSponsorsPage"/>
+                <Button fx:id="meetingButton" text="Rendez-vous" styleClass="nav-button" maxWidth="1.7976931348623157E308" alignment="CENTER_LEFT" onAction="#showRendezVousModule"/>
                 <Button fx:id="medicineButton" text="Medicaments" styleClass="nav-button" maxWidth="1.7976931348623157E308" alignment="CENTER_LEFT" onAction="#showVolunteersPage"/>
                 <Button fx:id="statsButton" text="Mes Statistiques" styleClass="nav-button" maxWidth="1.7976931348623157E308" alignment="CENTER_LEFT" onAction="#showLinksPage"/>
                 <Label text="COMMUNAUTE" styleClass="menu-section-title">
