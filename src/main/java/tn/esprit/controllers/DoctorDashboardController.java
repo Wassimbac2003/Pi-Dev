@@ -98,7 +98,7 @@ public class DoctorDashboardController {
     private final List<Ordonnance> myOrdosMaster = new ArrayList<>();
 
     @FXML
-    private void initialize() {
+    private void initialize() {      //loading when you run code yafichili les boutton interface hajet graphique
         doctorNavGroup = new ToggleGroup();
         navFichesBtn.setToggleGroup(doctorNavGroup);
         navOrdosBtn.setToggleGroup(doctorNavGroup);
@@ -119,13 +119,13 @@ public class DoctorDashboardController {
         DoctorSaisieDialogController.show(w, null, this::afterSaisieDataChanged);
     }
 
-    private void afterSaisieDataChanged() {
+    private void afterSaisieDataChanged() { // taa update
         reloadDoctorMasters();
         refreshMyFichesCards();
         refreshMyOrdosCards();
     }
 
-    private void showDoctorMesFiches() {
+    private void showDoctorMesFiches() { // affiche taa fiche
         navFichesBtn.setSelected(true);
         scrollMesFiches.setVisible(true);
         scrollMesFiches.setManaged(true);
@@ -143,7 +143,7 @@ public class DoctorDashboardController {
         refreshMyOrdosCards();
     }
 
-    private void reloadDoctorMasters() {
+    private void reloadDoctorMasters() { // tebaa user
         int mid = Session.getCurrentUserId();
         myFichesMaster.clear();
         myOrdosMaster.clear();
@@ -153,7 +153,7 @@ public class DoctorDashboardController {
         }
     }
 
-    private void refreshMyFichesCards() {
+    private void refreshMyFichesCards() { // affichage
         if (myFichesFlow == null) {
             return;
         }
@@ -166,7 +166,7 @@ public class DoctorDashboardController {
         countMyFiches.setText(list.size() + " fiche(s)");
     }
 
-    private boolean matchesMyFicheSearch(Fiche f, String q) {
+    private boolean matchesMyFicheSearch(Fiche f, String q) { // comparer haja l lawj aleha weli f bd
         if (q.isEmpty()) {
             return true;
         }

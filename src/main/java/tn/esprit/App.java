@@ -13,7 +13,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        MyConnection.getInstance();
+        MyConnection.getInstance();//sing
         Parent root = FXMLLoader.load(Objects.requireNonNull(
                 getClass().getResource("/tn/esprit/fxml/login.fxml")));
         Scene scene = new Scene(root, 1080, 700);

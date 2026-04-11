@@ -63,13 +63,7 @@ public class AdminFichesController {
     private final ObservableList<Fiche> master = FXCollections.observableArrayList();
 
     @FXML
-    private void initialize() {
-        sortCombo.setItems(FXCollections.observableArrayList(
-                "Date (récent → ancien)",
-                "Date (ancien → récent)",
-                "Plus récentes d’abord",
-                "Libellé (A → Z)"
-        ));
+
         sortCombo.getSelectionModel().selectFirst();
         graviteFilter.setItems(FXCollections.observableArrayList("Toutes"));
         grpFilter.setItems(FXCollections.observableArrayList("Tous"));
@@ -252,7 +246,7 @@ public class AdminFichesController {
     @FXML
     private void onAdd() {
         showEditorDialog(null);
-    }
+    } // heya fonction k tenzel ala nouvelle fiche ajouter
 
     private void confirmDelete(Fiche f) {
         Alert a = new Alert(Alert.AlertType.CONFIRMATION,
@@ -260,8 +254,8 @@ public class AdminFichesController {
         UiTheme.applyDialog(a);
         Optional<ButtonType> r = a.showAndWait();
         if (r.isPresent() && r.get() == ButtonType.OK) {
-            service.supprimer(f);
-            reloadMaster();
+            service.supprimer(f); // hne tfasakh ml bd
+            reloadMaster(); // hne tetnaha ml affichage refrech
         }
     }
 
@@ -530,7 +524,7 @@ public class AdminFichesController {
             f.setIdUId(u.getId());
             f.setMedecinUserId(med.getId());
 
-            if (isEdit) {
+            if (isEdit) { // taa ajouter
                 f.setId(existing.getId());
                 service.modifier(f);
             } else {
