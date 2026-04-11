@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="Controllers.AdminLayoutController"
+            prefWidth="1400" prefHeight="860"
+            style="-fx-background-color: #f0f4f8;">
+
+    <!-- SIDEBAR ADMIN (dark) -->
+    <left>
+        <VBox prefWidth="220" spacing="0"
+              style="-fx-background-color: #1a1f36; -fx-border-color: #2d3352; -fx-border-width: 0 1 0 0;">
+
+            <!-- Logo -->
+            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 25 20;">
+                <Label text="⚙" style="-fx-font-size: 22;"/>
+                <Label text="ADMIN" style="-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            </HBox>
+
+            <!-- Menu -->
+            <Button text="  📊  Dashboard" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
+                    style="-fx-background-color: transparent; -fx-text-fill: #8a8fa8; -fx-font-size: 13; -fx-padding: 0 0 0 20; -fx-cursor: hand;"/>
+
+                <Button fx:id="btnUsers" text="  👥  Utilisateurs" onAction="#showUsers" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
+                    style="-fx-background-color: transparent; -fx-text-fill: #8a8fa8; -fx-font-size: 13; -fx-padding: 0 0 0 20; -fx-cursor: hand;"/>
+
+            <Button fx:id="btnAdminRdv" text="  📅  Rendez-vous" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
+                    style="-fx-background-color: #2d6ff2; -fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; -fx-padding: 0 0 0 20; -fx-cursor: hand; -fx-background-radius: 0;"/>
+
+            <Button text="  🤝  Bénévolat" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
+                    style="-fx-background-color: transparent; -fx-text-fill: #8a8fa8; -fx-font-size: 13; -fx-padding: 0 0 0 20; -fx-cursor: hand;"/>
+
+            <Button text="  💬  Forum" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
+                    style="-fx-background-color: transparent; -fx-text-fill: #8a8fa8; -fx-font-size: 13; -fx-padding: 0 0 0 20; -fx-cursor: hand;"/>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <!-- User admin en bas -->
+            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 15 20; -fx-border-color: #2d3352; -fx-border-width: 1 0 0 0;">
+                <Label text="👨‍⚕️" style="-fx-font-size: 20;"/>
+                <VBox spacing="2">
+                    <Label text="Dr. Admin" style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label text="Médecin" style="-fx-font-size: 11; -fx-text-fill: #8a8fa8;"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="btnLogout" text="🚪" onAction="#logout"
+                        style="-fx-background-color: transparent; -fx-text-fill: #8a8fa8; -fx-cursor: hand; -fx-font-size: 14; -fx-padding: 0;"/>
+            </HBox>
+        </VBox>
+    </left>
+
+    <!-- CONTENU -->
+    <center>
+        <VBox spacing="0" style="-fx-background-color: #f0f4f8;">
+
+            <!-- HEADER -->
+            <HBox alignment="CENTER_LEFT" spacing="15" prefHeight="90"
+                  style="-fx-background-color: white; -fx-padding: 0 30; -fx-border-color: #e8e8e8; -fx-border-width: 0 0 1 0;">
+
+                <VBox spacing="3">
+                    <Label fx:id="pageTitle" text="Planning des Consultations"
+                           style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                    <Label text="Gérez les disponibilités et les rendez-vous patients"
+                           style="-fx-font-size: 12; -fx-text-fill: #999;"/>
+                </VBox>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label text="🔔" style="-fx-font-size: 18; -fx-cursor: hand;"/>
+                <VBox alignment="CENTER_RIGHT" spacing="2">
+                    <Label text="Aujourd'hui" style="-fx-font-size: 11; -fx-text-fill: #999;"/>
+                    <Label fx:id="lblDateAujourdhui" text="09/04/2026"
+                           style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                </VBox>
+            </HBox>
+
+            <!-- ZONE CONTENU -->
+            <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS" style="-fx-padding: 25;"/>
+        </VBox>
+    </center>
+</BorderPane>

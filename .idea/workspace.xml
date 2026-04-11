@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="052184bf-abed-4669-8734-d0583c05c4ce" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Controllers/AdminLayoutController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Controllers/AdminLayoutController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Controllers/MainLayoutController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Controllers/MainLayoutController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Utils/MyDb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Utils/MyDb.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/healthtrack/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/healthtrack/App.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/healthtrack/controllers/AdminMainController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/healthtrack/controllers/AdminMainController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/healthtrack/controllers/BenevolatPageController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/healthtrack/controllers/BenevolatPageController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/healthtrack/controllers/MainController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/healthtrack/controllers/MainController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/healthtrack/controllers/MissionApplicationPageController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/healthtrack/controllers/MissionApplicationPageController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/healthtrack/controllers/MissionDetailsPageController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/healthtrack/controllers/MissionDetailsPageController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/healthtrack/tools/MyConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/healthtrack/tools/MyConnection.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/healthtrack/util/AppConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/healthtrack/util/AppConstants.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/AdminLayout.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/AdminLayout.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/MainLayout.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/MainLayout.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/admin-main-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/admin-main-view.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/main-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/main-view.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/styles/dashboard.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/styles/dashboard.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/healthtrack/App.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/healthtrack/App.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/healthtrack/controllers/AdminMainController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/healthtrack/controllers/AdminMainController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/healthtrack/controllers/BenevolatPageController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/healthtrack/controllers/BenevolatPageController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/healthtrack/controllers/MainController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/healthtrack/controllers/MainController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/healthtrack/controllers/MissionApplicationPageController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/healthtrack/controllers/MissionApplicationPageController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/healthtrack/controllers/MissionDetailsPageController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/healthtrack/controllers/MissionDetailsPageController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/healthtrack/tools/MyConnection.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/healthtrack/tools/MyConnection.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/healthtrack/util/AppConstants.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/healthtrack/util/AppConstants.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/fxml/admin-main-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/admin-main-view.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/fxml/main-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/main-view.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/styles/dashboard.css" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/styles/dashboard.css" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="3CAgdHgTBXfvbUjhtCIifG4bOXC" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Launcher.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/ASUS/Downloads/wetransfer_vitaltech-zip_2026-04-14_1020/VitalTech/VitalTech",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "onboarding.tips.debug.path": "C:/Users/ASUS/Desktop/Projet dev/VitalTech/src/main/java/org/example/Main.java",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="VitalTech" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="VitalTech" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.240" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.29346.240" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="052184bf-abed-4669-8734-d0583c05c4ce" name="Changes" comment="" />
+      <created>1775833879575</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1775833879575</updated>
+      <workItem from="1775833880864" duration="173000" />
+      <workItem from="1776159762963" duration="2007000" />
+      <workItem from="1776168614061" duration="766000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/example/Main.java</url>
+          <line>13</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
