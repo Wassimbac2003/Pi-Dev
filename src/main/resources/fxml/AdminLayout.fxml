@@ -5,7 +5,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="Controllers.AdminLayoutController"
+            fx:controller="com.healthtrack.controllers.AdminLayoutController"
             prefWidth="1400" prefHeight="860"
             style="-fx-background-color: #f0f4f8;">
 
@@ -21,19 +21,19 @@
             </HBox>
 
             <!-- Menu -->
-            <Button text="  📊  Dashboard" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
+            <Button fx:id="btnDashboard" text="  📊  Dashboard" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
                     style="-fx-background-color: transparent; -fx-text-fill: #8a8fa8; -fx-font-size: 13; -fx-padding: 0 0 0 20; -fx-cursor: hand;"/>
 
-            <Button text="  👥  Utilisateurs" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
+            <Button fx:id="btnUtilisateurs" text="  👥  Utilisateurs" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
                     style="-fx-background-color: transparent; -fx-text-fill: #8a8fa8; -fx-font-size: 13; -fx-padding: 0 0 0 20; -fx-cursor: hand;"/>
 
             <Button fx:id="btnAdminRdv" text="  📅  Rendez-vous" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
                     style="-fx-background-color: #2d6ff2; -fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; -fx-padding: 0 0 0 20; -fx-cursor: hand; -fx-background-radius: 0;"/>
 
-            <Button text="  🤝  Bénévolat" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
+            <Button fx:id="btnBenevolat" text="  🤝  Bénévolat" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
                     style="-fx-background-color: transparent; -fx-text-fill: #8a8fa8; -fx-font-size: 13; -fx-padding: 0 0 0 20; -fx-cursor: hand;"/>
 
-            <Button text="  💬  Forum" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
+            <Button fx:id="btnForum" text="  💬  Forum" prefWidth="220" prefHeight="40" alignment="CENTER_LEFT"
                     style="-fx-background-color: transparent; -fx-text-fill: #8a8fa8; -fx-font-size: 13; -fx-padding: 0 0 0 20; -fx-cursor: hand;"/>
 
             <Region VBox.vgrow="ALWAYS"/>

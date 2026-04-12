@@ -45,7 +45,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>org.example.MainAdmin</mainClass>
+                    <mainClass>com.healthtrack.MainFx</mainClass>
                 </configuration>
             </plugin>
         </plugins>

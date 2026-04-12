@@ -53,7 +53,7 @@ public class MainController {
 
     @FXML
     public void showRendezVousModule() {
-        AppNavigator.switchRoot("/MainLayout.fxml");
+        AppNavigator.switchRoot("/fxml/MainLayout.fxml");
     }
 
     @FXML

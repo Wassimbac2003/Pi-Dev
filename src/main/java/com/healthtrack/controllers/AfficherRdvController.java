@@ -1,7 +1,7 @@
-package Controllers;
+package com.healthtrack.controllers;
 
-import Models.rdv;
-import Services.RdvService;
+import com.healthtrack.entities.rdv;
+import com.healthtrack.services.RdvService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -11,7 +11,6 @@ import javafx.scene.layout.*;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
 import javafx.fxml.FXMLLoader;
@@ -625,7 +624,7 @@ public class AfficherRdvController {
     }
     private void ouvrirShowOne(rdv r) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ShowOneRdv.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ShowOneRdv.fxml"));
             javafx.scene.Node content = loader.load();
             ShowOneRdvController controller = loader.getController();
             controller.initData(r);

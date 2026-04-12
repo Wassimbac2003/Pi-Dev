@@ -1,4 +1,4 @@
-package Models;
+package com.healthtrack.entities;
 
 public class rdv {
     private int id;

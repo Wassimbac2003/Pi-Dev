@@ -43,7 +43,7 @@ public class AdminMainController {
 
     @FXML
     public void showAdminRendezVousModule() {
-        AppNavigator.switchRoot("/AdminLayout.fxml");
+        AppNavigator.switchRoot("/fxml/AdminLayout.fxml");
     }
 
     @FXML

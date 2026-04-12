@@ -1,4 +1,4 @@
-package org.example;
+package com.healthtrack;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -10,7 +10,7 @@ public class MainAdmin extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/AdminLayout.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/fxml/AdminLayout.fxml"));
         Scene scene = new Scene(root, 1400, 860);
         stage.setTitle("VitalTech - Admin");
         stage.setScene(scene);

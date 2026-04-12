@@ -1,4 +1,4 @@
-package Utils;
+package com.healthtrack.tools;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

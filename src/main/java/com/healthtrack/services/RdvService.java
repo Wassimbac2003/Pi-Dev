@@ -1,7 +1,7 @@
-package Services;
+package com.healthtrack.services;
 
-import Models.rdv;
-import Utils.MyDb;
+import com.healthtrack.entities.rdv;
+import com.healthtrack.tools.MyDb;
 
 import java.sql.*;
 import java.util.ArrayList;

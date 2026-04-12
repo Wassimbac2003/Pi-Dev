@@ -1,4 +1,4 @@
-package org.example;
+package com.healthtrack;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -10,7 +10,7 @@ public class MainFx extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/MainLayout.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/fxml/MainLayout.fxml"));
         Scene scene = new Scene(root, 1400, 860);
         stage.setTitle("VitalTech - Health Track");
         stage.setScene(scene);

@@ -5,8 +5,10 @@ import com.healthtrack.services.MissionVolunteerService;
 import com.healthtrack.services.VolunteerService;
 import com.healthtrack.util.MissionMediaUtil;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -19,6 +21,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -56,12 +59,41 @@ public class AdminMissionsPageController implements AdminPageController {
 
     @FXML
     private void openMissionForm() {
-        adminMainController.showAdminMissionForm(null);
+        if (adminMainController != null) {
+            adminMainController.showAdminMissionForm(null);
+        } else {
+            chargerDansParent("/fxml/admin-mission-form-page.fxml");
+        }
     }
 
     @FXML
     private void openSponsors() {
-        adminMainController.showAdminSponsorsPage();
+        if (adminMainController != null) {
+            adminMainController.showAdminSponsorsPage();
+        } else {
+            chargerDansParent("/fxml/admin-sponsors-page.fxml");
+        }
+    }
+
+    private void chargerDansParent(String fxml) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
+            Node content = loader.load();
+
+            Object controller = loader.getController();
+            if (controller instanceof AdminPageController adminPage) {
+                adminPage.setAdminMainController(null);
+                adminPage.onPageShown();
+            }
+
+            StackPane parent = (StackPane) rowsContainer.getScene().lookup("#contentArea");
+            if (parent != null) {
+                parent.getChildren().clear();
+                parent.getChildren().add(content);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -176,7 +208,13 @@ public class AdminMissionsPageController implements AdminPageController {
         actions.setAlignment(Pos.CENTER);
         Button editButton = new Button("Modifier");
         editButton.getStyleClass().addAll("admin-action-button", "admin-edit-button");
-        editButton.setOnAction(event -> adminMainController.showAdminMissionForm(mission));
+        editButton.setOnAction(event -> {
+            if (adminMainController != null) {
+                adminMainController.showAdminMissionForm(mission);
+            } else {
+                chargerDansParent("/fxml/admin-mission-form-page.fxml");
+            }
+        });
         Button deleteButton = new Button("Supprimer");
         deleteButton.getStyleClass().addAll("admin-action-button", "admin-delete-button");
         deleteButton.setOnAction(event -> {

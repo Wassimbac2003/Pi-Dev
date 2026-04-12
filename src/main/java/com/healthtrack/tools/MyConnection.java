@@ -9,7 +9,7 @@ public class MyConnection {
     private static MyConnection instance;
     private final Connection connection;
 
-    private static final String URL = "jdbc:mysql://127.0.0.1:3306/health_test?serverTimezone=UTC";
+    private static final String URL = "jdbc:mysql://127.0.0.1:3306/health_track?serverTimezone=UTC";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "";
 

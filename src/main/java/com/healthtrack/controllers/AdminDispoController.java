@@ -1,9 +1,9 @@
-package Controllers;
+package com.healthtrack.controllers;
 
-import Models.disponibilite;
-import Models.rdv;
-import Services.DisponibiliteService;
-import Services.RdvService;
+import com.healthtrack.entities.disponibilite;
+import com.healthtrack.entities.rdv;
+import com.healthtrack.services.DisponibiliteService;
+import com.healthtrack.services.RdvService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -421,7 +421,7 @@ public class AdminDispoController {
 
     private void retourRdv() {
         try {
-            Node content = FXMLLoader.load(getClass().getResource("/AdminRdv.fxml"));
+            Node content = FXMLLoader.load(getClass().getResource("/fxml/AdminRdv.fxml"));
             StackPane parent = (StackPane) calendarGrid.getScene().lookup("#contentArea");
             if (parent != null) {
                 parent.getChildren().clear();

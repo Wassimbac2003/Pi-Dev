@@ -1,7 +1,8 @@
-package Controllers;
+package com.healthtrack.controllers;
 
-import Models.rdv;
-import Services.RdvService;
+import com.healthtrack.entities.rdv;
+import com.healthtrack.services.RdvService;
+import com.healthtrack.tools.MyDb;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -15,7 +16,6 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
-import Utils.MyDb;
 
 public class AdminRdvController {
 
@@ -323,7 +323,7 @@ public class AdminRdvController {
                 r.setHfin(hfin);
 
                 String sql = "UPDATE rdv SET date=?, hdebut=?, hfin=? WHERE id=?";
-                java.sql.PreparedStatement ps = Utils.MyDb.getInstance().getConnection().prepareStatement(sql);
+                java.sql.PreparedStatement ps = MyDb.getInstance().getConnection().prepareStatement(sql);
                 ps.setString(1, r.getDate());
                 ps.setString(2, r.getHdebut());
                 ps.setString(3, r.getHfin());
@@ -341,7 +341,7 @@ public class AdminRdvController {
     }
     private void naviguerVersDispo() {
         try {
-            Node content = FXMLLoader.load(getClass().getResource("/AdminDispo.fxml"));
+            Node content = FXMLLoader.load(getClass().getResource("/fxml/AdminDispo.fxml"));
             StackPane parent = (StackPane) rdvTableContainer.getScene().lookup("#contentArea");
             if (parent != null) {
                 parent.getChildren().clear();

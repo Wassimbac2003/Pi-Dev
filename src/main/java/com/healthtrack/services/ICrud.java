@@ -1,4 +1,4 @@
-package Services;
+package com.healthtrack.services;
 
 import java.sql.SQLException;
 import java.util.List;

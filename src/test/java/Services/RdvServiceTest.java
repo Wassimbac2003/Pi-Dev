@@ -1,6 +1,7 @@
 package Services;
 
-import Models.rdv;
+import com.healthtrack.entities.rdv;
+import com.healthtrack.services.RdvService;
 import org.junit.jupiter.api.*;
 
 import java.sql.SQLException;

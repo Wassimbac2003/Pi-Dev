@@ -1,7 +1,7 @@
-package Controllers;
+package com.healthtrack.controllers;
 
-import Models.rdv;
-import Services.RdvService;
+import com.healthtrack.entities.rdv;
+import com.healthtrack.services.RdvService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -82,7 +82,7 @@ public class ShowOneRdvController {
 
     private void retourListe() {
         try {
-            Node content = FXMLLoader.load(getClass().getResource("/AfficherRdv.fxml"));
+            Node content = FXMLLoader.load(getClass().getResource("/fxml/AfficherRdv.fxml"));
             StackPane parent = (StackPane) btnRetour.getScene().lookup("#contentArea");
             if (parent != null) {
                 parent.getChildren().clear();

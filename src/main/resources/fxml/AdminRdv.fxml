@@ -5,7 +5,7 @@
 
 <ScrollPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="Controllers.AdminRdvController"
+            fx:controller="com.healthtrack.controllers.AdminRdvController"
             fitToWidth="true"
             style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
 
