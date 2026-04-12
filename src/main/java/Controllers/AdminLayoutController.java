@@ -31,8 +31,7 @@ public class AdminLayoutController {
             contentArea.getChildren().clear();
             contentArea.getChildren().add(content);
         } catch (IOException e) {
-            System.err.println("Erreur chargement " + fxml + " :");
-            e.printStackTrace();
+            System.err.println("Erreur chargement " + fxml + " : " + e.getMessage());
         }
     }
 }
