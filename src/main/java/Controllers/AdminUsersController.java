@@ -14,6 +14,47 @@ import javafx.scene.layout.VBox;
 
 import java.util.List;
 import java.util.Objects;
+
+public class AdminUsersController {
+
+    @FXML
+    private TilePane usersGrid;
+    @FXML
+    private Label countLabel;
+    @FXML
+    private Label selectedUserLabel;
+    @FXML
+    private TextField emailField;
+    @FXML
+    private TextField nomField;
+    @FXML
+    private TextField prenomField;
+    @FXML
+    private TextField telephoneField;
+    @FXML
+    private TextField adresseField;
+    @FXML
+    private TextField verificationStatusField;
+    @FXML
+    private ComboBox<String> roleCombo;
+    @FXML
+    private CheckBox verifiedCheckBox;
+    @FXML
+    private Button updateButton;
+    @FXML
+    private Button deleteButton;
+
+    private final UserService userService = new UserService();
+    private List<User> users = List.of();
+    private User selectedUser;
+
+    @FXML
+    public void initialize() {
+        roleCombo.getItems().setAll("ROLE_ADMIN", "ROLE_MEDECIN", "ROLE_PATIENT");
+        clearSelection();
+        refreshUsers();
+    }
+
     @FXML
     public void refreshUsers() {
         users = userService.findAll();
@@ -151,20 +192,4 @@ import java.util.Objects;
         deleteButton.setDisable(false);
     }
 
-    private String cardStyle(User user) {
-        boolean selected = selectedUser != null && Objects.equals(selectedUser.getId(), user.getId());
-        if (selected) {
-            return "-fx-background-color: #dbeafe; -fx-border-color: #2563eb; -fx-border-width: 1.5; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12; -fx-cursor: hand;";
-        }
-        return "-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12; -fx-cursor: hand;";
-    }
 
-    private String safe(String value) {
-        return value == null ? "" : value.trim();
-    }
-
-    private String safeOrNull(String value) {
-        String clean = safe(value);
-        return clean.isBlank() ? null : clean;
-    }
-}
