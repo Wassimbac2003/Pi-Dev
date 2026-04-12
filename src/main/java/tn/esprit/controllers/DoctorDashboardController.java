@@ -166,21 +166,7 @@ public class DoctorDashboardController {
         countMyFiches.setText(list.size() + " fiche(s)");
     }
 
-    private boolean matchesMyFicheSearch(Fiche f, String q) { // comparer haja l lawj aleha weli f bd
-        if (q.isEmpty()) {
-            return true;
-        }
-        String patient = userService.findById(f.getIdUId()).map(UiTheme::userDisplayName).orElse("").toLowerCase(Locale.ROOT);
-        return patient.contains(q)
-                || contains(f.getLibelleMaladie(), q)
-                || contains(f.getGrpSanguin(), q)
-                || contains(f.getGravite(), q)
-                || contains(f.getTension(), q)
-                || contains(f.getAllergie(), q)
-                || contains(f.getMaladieChronique(), q)
-                || contains(f.getSymptomes(), q)
-                || (f.getDate() != null && f.getDate().toString().toLowerCase(Locale.ROOT).contains(q));
-    }
+    
 
     private void refreshMyOrdosCards() {
         if (myOrdosFlow == null) {
