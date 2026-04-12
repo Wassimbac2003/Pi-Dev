@@ -364,14 +364,4 @@ public class PatientDashboardController {
         }
     }
 
-    @FXML
-    private void onLogout() throws Exception {
-        Session.clear();
-        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/tn/esprit/fxml/login.fxml")));
-        Scene scene = new Scene(root, 1080, 700);
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/tn/esprit/styles/app.css")).toExternalForm());
-        stage.setScene(scene);
-        stage.setTitle("Clinique — Connexion");
-    }
-}
+
