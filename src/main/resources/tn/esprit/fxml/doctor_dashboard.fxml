@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.DoctorDashboardController"
+            styleClass="portal-shell"
+            stylesheets="@../styles/app.css">
+    <top>
+        <VBox spacing="0">
+            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="portal-nav-bar doctor-portal-nav">
+                <padding>
+                    <Insets top="14" right="24" bottom="14" left="24"/>
+                </padding>
+                <VBox spacing="2">
+                    <Label text="Cabinet médical" styleClass="portal-nav-brand"/>
+                    <Label text="Espace praticien" styleClass="portal-nav-tagline"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Nouvelle saisie" onAction="#onOpenSaisieDialog" styleClass="portal-nav-cta" mnemonicParsing="false"/>
+                <ToggleButton fx:id="navFichesBtn" text="Mes fiches" styleClass="portal-nav-toggle" mnemonicParsing="false"/>
+                <ToggleButton fx:id="navOrdosBtn" text="Mes ordonnances" styleClass="portal-nav-toggle" mnemonicParsing="false"/>
+                <Button text="Déconnexion" onAction="#onLogout" styleClass="danger-button portal-nav-logout"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <StackPane fx:id="doctorMainStack" styleClass="portal-body doctor-portal-body">
+            <ScrollPane fx:id="scrollMesFiches" fitToWidth="true" styleClass="card-scroll" visible="true">
+                <VBox spacing="20" styleClass="doctor-page-inner">
+                    <VBox spacing="8" styleClass="doctor-hero-strip">
+                        <Label text="Vos fiches" styleClass="doctor-hero-title"/>
+                        <Label text="Cartes des consultations que vous avez rédigées. Recherche par patient, motif, groupe sanguin…"
+                               wrapText="true" styleClass="doctor-hero-sub"/>
+                    </VBox>
+                    <HBox alignment="CENTER_LEFT" spacing="16" styleClass="admin-toolbar doctor-toolbar-card">
+                        <VBox spacing="4">
+                            <Label text="Fiches que vous avez rédigées" styleClass="page-title"/>
+                            <Label text="Recherche sur patient, motif, groupe, gravité… (aucun identifiant affiché)."
+                                   styleClass="card-sub" wrapText="true"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <TextField fx:id="searchMyFiches" promptText="Rechercher…" prefWidth="300" styleClass="search-field"/>
+                        <Label fx:id="countMyFiches" styleClass="count-pill"/>
+                    </HBox>
+                    <FlowPane fx:id="myFichesFlow" styleClass="tile-flow"/>
+                </VBox>
+            </ScrollPane>
+
+            <ScrollPane fx:id="scrollMesOrdos" fitToWidth="true" styleClass="card-scroll" visible="false" managed="false">
+                <VBox spacing="20" styleClass="doctor-page-inner">
+                    <VBox spacing="8" styleClass="doctor-hero-strip doctor-hero-strip-alt">
+                        <Label text="Vos ordonnances" styleClass="doctor-hero-title"/>
+                        <Label text="Prescriptions que vous avez émises. Recherche par patient, posologie, médicaments, date…"
+                               wrapText="true" styleClass="doctor-hero-sub"/>
+                    </VBox>
+                    <HBox alignment="CENTER_LEFT" spacing="16" styleClass="admin-toolbar doctor-toolbar-card">
+                        <VBox spacing="4">
+                            <Label text="Ordonnances que vous avez prescrites" styleClass="page-title"/>
+                            <Label text="Recherche sur patient, posologie, médicaments, date…" styleClass="card-sub" wrapText="true"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <TextField fx:id="searchMyOrdos" promptText="Rechercher…" prefWidth="300" styleClass="search-field"/>
+                        <Label fx:id="countMyOrdos" styleClass="count-pill"/>
+                    </HBox>
+                    <FlowPane fx:id="myOrdosFlow" styleClass="tile-flow"/>
+                </VBox>
+            </ScrollPane>
+        </StackPane>
+    </center>
+</BorderPane>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.PatientDashboardController"
+            stylesheets="@../styles/app.css">
+    <top>
+        <VBox spacing="0">
+            <HBox alignment="CENTER_LEFT" spacing="8" styleClass="portal-nav-bar patient-portal-nav">
+                <padding>
+                    <Insets top="14" right="20" bottom="14" left="20"/>
+                </padding>
+                <Label fx:id="welcomeLabel" styleClass="portal-nav-brand"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <ToggleButton fx:id="navFicheBtn" text="Ma fiche" styleClass="portal-nav-toggle" mnemonicParsing="false"/>
+                <ToggleButton fx:id="navOrdoBtn" text="Mes ordonnances" styleClass="portal-nav-toggle" mnemonicParsing="false"/>
+                <Button text="Déconnexion" onAction="#onLogout" styleClass="danger-button portal-nav-logout"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <StackPane fx:id="patientStack" styleClass="portal-body">
+            <ScrollPane fx:id="scrollFiche" fitToWidth="true" styleClass="card-scroll" visible="true">
+                <VBox spacing="20" style="-fx-padding: 24 28 32 28;">
+                    <Label text="Ma fiche médicale" styleClass="page-title"/>
+                    <VBox fx:id="ficheBox" spacing="12"/>
+                </VBox>
+            </ScrollPane>
+            <ScrollPane fx:id="scrollOrdo" fitToWidth="true" styleClass="card-scroll" visible="false" managed="false">
+                <VBox spacing="16" style="-fx-padding: 24 28 32 28;">
+                    <HBox alignment="CENTER_LEFT" spacing="16" styleClass="admin-toolbar" style="-fx-background-radius: 14; -fx-padding: 16 20;">
+                        <VBox spacing="4">
+                            <Label text="Mes ordonnances" styleClass="page-title"/>
+                            <Label text="Recherche instantanée sur le contenu de vos prescriptions."
+                                   styleClass="card-sub" wrapText="true"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <TextField fx:id="ordoSearchField" promptText="Rechercher…" prefWidth="280" styleClass="search-field"/>
+                    </HBox>
+                    <FlowPane fx:id="ordoFlow" styleClass="tile-flow"/>
+                </VBox>
+            </ScrollPane>
+        </StackPane>
+    </center>
+</BorderPane>

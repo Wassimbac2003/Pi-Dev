@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.LoginController"
+            stylesheets="@../styles/app.css">
+    <left>
+        <VBox styleClass="login-hero" alignment="CENTER" prefWidth="380" spacing="12">
+            <padding>
+                <Insets top="40" right="32" bottom="40" left="32"/>
+            </padding>
+            <Label text="Espace santé" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
+            <Label text="Administration, médecin ou patient" wrapText="true"
+                   style="-fx-opacity: 0.9;"/>
+        </VBox>
+    </left>
+    <center>
+        <VBox alignment="CENTER_LEFT" spacing="16" styleClass="panel" maxWidth="420">
+            <BorderPane.margin>
+                <Insets top="32" right="40" bottom="32" left="40"/>
+            </BorderPane.margin>
+            <Label text="Connexion" styleClass="page-title"/>
+            <Label text="Choisissez un portail puis validez." styleClass="card-sub"/>
+
+            <Label text="Portail"/>
+            <ChoiceBox fx:id="portalChoice" prefWidth="360"/>
+
+            <Label text="Utilisateur (médecin / patient)" styleClass="card-sub"/>
+            <ComboBox fx:id="userCombo" prefWidth="360" promptText="—"/>
+
+            <HBox spacing="12" alignment="CENTER_RIGHT">
+                <Button text="Entrer" onAction="#onEnter" styleClass="primary-button" defaultButton="true"/>
+            </HBox>
+            <Label fx:id="errorLabel" style="-fx-text-fill: #dc2626;" wrapText="true"/>
+        </VBox>
+    </center>
+</BorderPane>

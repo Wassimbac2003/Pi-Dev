@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.DoctorSaisieDialogController"
+            stylesheets="@../styles/app.css"
+            styleClass="saisie-dialog-root"
+            prefWidth="920" prefHeight="760" minWidth="640" minHeight="520">
+    <top>
+        <VBox styleClass="saisie-dialog-hero" spacing="6">
+            <padding>
+                <Insets top="22" right="28" bottom="20" left="28"/>
+            </padding>
+            <Label text="Nouvelle saisie" styleClass="saisie-dialog-title"/>
+            <Label text="Choisissez un patient, mettez à jour sa fiche médicale puis enregistrez une ordonnance si besoin — tout reste modifiable après enregistrement."
+                   wrapText="true" maxWidth="840" styleClass="saisie-dialog-sub"/>
+        </VBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="saisie-dialog-scroll" hbarPolicy="NEVER">
+            <VBox spacing="22" styleClass="saisie-dialog-body">
+                <padding>
+                    <Insets top="8" right="28" bottom="32" left="28"/>
+                </padding>
+
+                <VBox spacing="12" styleClass="saisie-sheet">
+                    <Label text="Patient" styleClass="saisie-sheet-heading"/>
+                    <ComboBox fx:id="patientCombo" maxWidth="Infinity" promptText="Choisir un patient"/>
+                    <Label text="Une seule fiche par patient. L’ordonnance nécessite une fiche et au moins un médicament."
+                           wrapText="true" styleClass="card-sub"/>
+                </VBox>
+
+                <VBox fx:id="ficheFormSection" spacing="12" styleClass="saisie-sheet saisie-sheet-fiche">
+                    <Label text="Fiche médicale" styleClass="saisie-sheet-heading"/>
+                    <Label fx:id="ficheValidationBanner" wrapText="true" maxWidth="Infinity" visible="false" managed="false"
+                           styleClass="form-validation-summary"/>
+                    <GridPane hgap="12" vgap="10">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="110" prefWidth="130"/>
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="160"/>
+                            <ColumnConstraints minWidth="110" prefWidth="130"/>
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="160"/>
+                        </columnConstraints>
+                        <Label text="Poids (kg)" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <TextField fx:id="fPoids" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                        <Label text="Taille (cm)" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                        <TextField fx:id="fTaille" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+                        <Label text="Groupe sanguin" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <ComboBox fx:id="fGrpCombo" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <Label text="Allergie" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                        <TextField fx:id="fAllergie" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+                        <Label text="Maladie chronique" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <TextField fx:id="fChronique" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                        <Label text="Tension" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+                        <TextField fx:id="fTension" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+                        <Label text="Glycémie" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <TextField fx:id="fGlycemie" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                        <Label text="Date de consultation" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+                        <DatePicker fx:id="fDate" maxWidth="Infinity" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
+                        <Label text="Motif / libellé" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <TextField fx:id="fLibelle" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                        <Label text="Gravité" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+                        <ComboBox fx:id="fGraviteCombo" maxWidth="Infinity" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
+                        <Label text="Recommandation" GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.valignment="TOP"/>
+                        <TextArea fx:id="fReco" prefRowCount="3" wrapText="true" GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                        <Label text="Symptômes" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.valignment="TOP"/>
+                        <TextArea fx:id="fSymptomes" prefRowCount="3" wrapText="true" GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                    </GridPane>
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <Button text="Enregistrer la fiche" onAction="#onSaveFiche" styleClass="primary-button"/>
+                    </HBox>
+                </VBox>
+
+                <VBox fx:id="ordoFormSection" spacing="12" styleClass="saisie-sheet saisie-sheet-ordo">
+                    <Label text="Ordonnance" styleClass="saisie-sheet-heading"/>
+                    <Label fx:id="ordoValidationBanner" wrapText="true" maxWidth="Infinity" visible="false" managed="false"
+                           styleClass="form-validation-summary"/>
+                    <GridPane hgap="12" vgap="10">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="110" prefWidth="130"/>
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="200"/>
+                            <ColumnConstraints minWidth="110" prefWidth="130"/>
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="200"/>
+                        </columnConstraints>
+                        <Label text="Fiche liée" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <ComboBox fx:id="ficheCombo" maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                        <Label text="Médicaments" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.valignment="TOP"/>
+                        <ListView fx:id="medsListView" prefHeight="140" maxHeight="200" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                        <Label text="Posologie" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <TextField fx:id="oPosologie" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                        <Label text="Fréquence" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+                        <TextField fx:id="oFrequence" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+                        <Label text="Durée (jours)" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <TextField fx:id="oDuree" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                        <Label text="Date" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+                        <DatePicker fx:id="oDate" maxWidth="Infinity" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
+                        <Label text="Heure" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT" GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.columnSpan="3">
+                            <ComboBox fx:id="oHourCombo" prefWidth="80"/>
+                            <Label text="h" styleClass="card-sub"/>
+                            <ComboBox fx:id="oMinCombo" prefWidth="80"/>
+                            <Label text="min" styleClass="card-sub"/>
+                        </HBox>
+                    </GridPane>
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <Button text="Enregistrer l’ordonnance" onAction="#onSaveOrdonnance" styleClass="primary-button"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

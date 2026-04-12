@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            styleClass="admin-page"
+            fx:controller="tn.esprit.controllers.AdminMedicamentsController">
+    <top>
+        <VBox spacing="0" styleClass="admin-toolbar">
+            <BorderPane.margin>
+                <Insets bottom="16"/>
+            </BorderPane.margin>
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <VBox spacing="4">
+                    <Label text="Médicaments" styleClass="page-title"/>
+                    <Label text="Catalogue, recherche et mise à jour des traitements." styleClass="card-sub"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Nouveau médicament" onAction="#onAdd" styleClass="primary-button"/>
+            </HBox>
+            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="toolbar-row">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Recherche" styleClass="field-label"/>
+                    <TextField fx:id="searchField" promptText="Nom, catégorie, dosage, forme…"/>
+                </VBox>
+                <VBox spacing="6">
+                    <Label text="Catégorie" styleClass="field-label"/>
+                    <ComboBox fx:id="categoryFilter" prefWidth="190"/>
+                </VBox>
+                <VBox spacing="6">
+                    <Label text="Tri" styleClass="field-label"/>
+                    <ComboBox fx:id="sortCombo" prefWidth="210"/>
+                </VBox>
+            </HBox>
+            <Label fx:id="countLabel" styleClass="count-pill">
+                <VBox.margin>
+                    <Insets top="14"/>
+                </VBox.margin>
+            </Label>
+        </VBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="card-scroll">
+            <FlowPane fx:id="cardsFlow" styleClass="tile-flow"/>
+        </ScrollPane>
+    </center>
+</BorderPane>
