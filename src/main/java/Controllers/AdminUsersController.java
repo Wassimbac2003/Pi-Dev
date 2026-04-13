@@ -150,46 +150,22 @@ public class AdminUsersController {
         }
     }
 
-    private VBox createUserCard(User user) {
-        VBox card = new VBox(6);
-        card.setStyle(cardStyle(user));
 
-        Label name = new Label((safe(user.getNom()) + " " + safe(user.getPrenom())).trim());
-        name.setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
-        Label email = new Label(safe(user.getEmail()));
-        email.setStyle("-fx-font-size: 12; -fx-text-fill: #475569;");
-        Label role = new Label(safe(user.getRole()));
-        role.setStyle("-fx-font-size: 12; -fx-text-fill: #1d4ed8; -fx-font-weight: bold;");
-        Label verified = new Label(user.isVerified() ? "Verifie" : "Non verifie");
-        verified.setStyle(user.isVerified()
-                ? "-fx-font-size: 12; -fx-text-fill: #059669; -fx-font-weight: bold;"
-                : "-fx-font-size: 12; -fx-text-fill: #b91c1c; -fx-font-weight: bold;");
 
-        card.getChildren().addAll(name, email, role, verified);
-        card.setOnMouseClicked(event -> {
-            selectedUser = userService.findById(user.getId());
-            fillForm(selectedUser);
-            renderGrid();
-        });
-        return card;
-    }
-
-    private void fillForm(User user) {
-        if (user == null) {
-            clearSelection();
-            return;
+    private String cardStyle(User user) {
+        boolean selected = selectedUser != null && Objects.equals(selectedUser.getId(), user.getId());
+        if (selected) {
+            return "-fx-background-color: #dbeafe; -fx-border-color: #2563eb; -fx-border-width: 1.5; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12; -fx-cursor: hand;";
         }
-        selectedUserLabel.setText("Selection: #" + user.getId());
-        emailField.setText(safe(user.getEmail()));
-        nomField.setText(safe(user.getNom()));
-        prenomField.setText(safe(user.getPrenom()));
-        telephoneField.setText(safe(user.getTelephone()));
-        adresseField.setText(safe(user.getAdresse()));
-        verificationStatusField.setText(safe(user.getVerificationStatus()));
-        roleCombo.getSelectionModel().select(safe(user.getRole()));
-        verifiedCheckBox.setSelected(user.isVerified());
-        updateButton.setDisable(false);
-        deleteButton.setDisable(false);
+        return "-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12; -fx-cursor: hand;";
     }
 
+    private String safe(String value) {
+        return value == null ? "" : value.trim();
+    }
 
+    private String safeOrNull(String value) {
+        String clean = safe(value);
+        return clean.isBlank() ? null : clean;
+    }
+}
