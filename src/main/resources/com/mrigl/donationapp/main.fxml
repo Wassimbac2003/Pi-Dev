@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="rootPane" styleClass="app-root" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.mrigl.donationapp.controller.MainDashboardController">
+    <left>
+        <VBox fx:id="sidebarPane" prefWidth="245.0" spacing="22.0" styleClass="sidebar">
+            <padding>
+                <Insets top="22.0" right="18.0" bottom="18.0" left="18.0"/>
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label styleClass="sidebar-brand-icon" text="❤"/>
+                <Label styleClass="sidebar-brand" text="VitalTech"/>
+            </HBox>
+            <VBox spacing="7.0">
+                <Label fx:id="lblMenuMain" styleClass="sidebar-section" text="MENU PRINCIPAL"/>
+                <Button fx:id="btnNav1" styleClass="sidebar-btn" text="◧  Tableau de bord"/>
+                <Button fx:id="btnNav2" styleClass="sidebar-btn" text="▣  Rendez-vous"/>
+                <Button fx:id="btnNav3" styleClass="sidebar-btn" text="◌  Médicaments"/>
+                <Button fx:id="btnNav4" styleClass="sidebar-btn" text="▤  Mes statistiques"/>
+            </VBox>
+            <VBox spacing="7.0">
+                <Label fx:id="lblMenuCommunity" styleClass="sidebar-section" text="COMMUNAUTÉ"/>
+                <Button fx:id="btnNav5" styleClass="sidebar-btn" text="❤  Bénévolat"/>
+                <Button fx:id="btnNav6" styleClass="sidebar-btn" text="◔  Forum"/>
+                <Button fx:id="btnShowAll" onAction="#toggleDonAnnoncesMenu" styleClass="sidebar-btn" text="Annonces &amp; Dons"/>
+                <VBox fx:id="subMenuDonAnnonce" spacing="7.0" styleClass="sidebar-submenu">
+                    <Button fx:id="btnShowAnnonces" onAction="#showAnnoncesOnly" styleClass="sidebar-btn" text="Annonce"/>
+                    <Button fx:id="btnShowDonations" onAction="#showDonationsOnly" styleClass="sidebar-btn" text="Don"/>
+                </VBox>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox spacing="7.0" styleClass="sidebar-footer">
+                <Button styleClass="sidebar-btn" text="◕  Mon compte"/>
+                <Button styleClass="sidebar-btn sidebar-btn-danger" text="◧  Déconnexion"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <VBox fx:id="workspacePane" spacing="12.0" style="-fx-padding: 14;">
+            <HBox alignment="CENTER_LEFT">
+                <Label fx:id="lblWorkspaceTitle" styleClass="workspace-title" text="Espace Solidarité"/>
+                <HBox HBox.hgrow="ALWAYS"/>
+                <HBox spacing="8.0">
+                    <Button fx:id="btnFrontMode" onAction="#switchToFront" styleClass="btn-ghost" text="Front Office"/>
+                    <Button fx:id="btnBackMode" onAction="#switchToBack" styleClass="btn-ghost" text="Back Office"/>
+                </HBox>
+                <Region minWidth="10.0"/>
+                <TextField fx:id="tfGlobalSearch" prefWidth="260.0" promptText="Rechercher..."/>
+            </HBox>
+
+            <VBox styleClass="hero-banner" spacing="10.0">
+                <Label fx:id="lblHeroTitle" styleClass="hero-title" text="Gérez vos dons et annonces"/>
+                <Label fx:id="lblHeroSubtitle" styleClass="hero-subtitle" text="Consultez les besoins, ajoutez vos annonces et proposez des dons rapidement."/>
+                <HBox spacing="10.0">
+                    <Button fx:id="btnAddAnnonceTop" onAction="#onAddAnnonceTop" styleClass="btn-primary" text="Ajouter une annonce"/>
+                    <Button fx:id="btnAddDonationTop" onAction="#onAddDonationTop" styleClass="btn-secondary" text="Ajouter un don"/>
+                </HBox>
+            </VBox>
+
+            <HBox spacing="10.0">
+                <VBox fx:id="statsCard1" styleClass="stats-card" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblStat1Title" styleClass="muted-label" text="Annonces"/>
+                    <Label fx:id="lblTotalAnnonces" styleClass="stats-value" text="0"/>
+                </VBox>
+                <VBox fx:id="statsCard2" styleClass="stats-card" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblStat2Title" styleClass="muted-label" text="Dons en attente"/>
+                    <Label fx:id="lblPendingDons" styleClass="stats-value" text="0"/>
+                </VBox>
+                <VBox fx:id="statsCard3" styleClass="stats-card" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblStat3Title" styleClass="muted-label" text="Dons acceptés"/>
+                    <Label fx:id="lblAcceptedDons" styleClass="stats-value" text="0"/>
+                </VBox>
+            </HBox>
+
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="transparent-scroll">
+                <VBox spacing="12.0">
+                    <VBox fx:id="annoncesPanel" spacing="8.0" styleClass="panel-card">
+                        <Label fx:id="lblAnnoncesSectionTitle" styleClass="section-title" text="Annonces récentes"/>
+                        <ListView fx:id="listAnnonces" prefHeight="320.0" styleClass="modern-list"/>
+                    </VBox>
+                    <VBox fx:id="donationsPanel" spacing="8.0" styleClass="panel-card">
+                        <Label fx:id="lblDonationsSectionTitle" styleClass="section-title" text="Mes propositions de dons"/>
+                        <ListView fx:id="listDonations" prefHeight="320.0" styleClass="modern-list"/>
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+        </VBox>
+    </center>
+</BorderPane>

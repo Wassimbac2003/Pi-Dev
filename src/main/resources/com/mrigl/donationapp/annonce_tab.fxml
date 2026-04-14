@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane styleClass="page-root" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.mrigl.donationapp.controller.AnnonceController">
+    <top>
+        <VBox spacing="8.0" styleClass="hero-banner">
+            <padding>
+                <Insets bottom="10.0" left="16.0" right="16.0" top="10.0"/>
+            </padding>
+            <Label styleClass="hero-title" text="Gérez vos annonces"/>
+            <Label styleClass="hero-subtitle" text="Créez, modifiez et suivez vos annonces sans afficher les identifiants."/>
+        </VBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.40" orientation="VERTICAL" styleClass="panel-split" style="-fx-padding: 8 10 10 10;">
+            <VBox spacing="8.0" styleClass="panel-card">
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <Label styleClass="section-title" text="Annonces de besoins"/>
+                    <TextField fx:id="tfSearchAnnonce" prefWidth="300.0" promptText="Rechercher par titre..."/>
+                    <Label styleClass="muted-label" text="Trier urgence"/>
+                    <ComboBox fx:id="cbSortUrgence" prefWidth="180.0"/>
+                </HBox>
+                <ListView fx:id="listAnnonces" prefHeight="230.0" styleClass="modern-list"/>
+            </VBox>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="transparent-scroll">
+                <VBox spacing="10.0" styleClass="panel-card">
+                    <Label styleClass="section-title" text="Formulaire annonce"/>
+                    <Label fx:id="lblErreursAnnonce" style="-fx-text-fill: #c62828; -fx-wrap-text: true;" wrapText="true"/>
+                    <VBox spacing="10.0">
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <Label minWidth="170.0" prefWidth="170.0" style="-fx-text-fill: #0f172a; -fx-font-weight: bold;" text="Titre * :"/>
+                            <TextField fx:id="tfTitre" maxWidth="820.0" prefWidth="700.0" promptText="Ex: Besoin urgent d'un fauteuil roulant"/>
+                        </HBox>
+                        <HBox alignment="TOP_LEFT" spacing="12.0">
+                            <Label minWidth="170.0" prefWidth="170.0" style="-fx-text-fill: #0f172a; -fx-font-weight: bold;" text="Description * :"/>
+                            <TextArea fx:id="taDescription" prefRowCount="3" prefWidth="700.0" promptText="Décrivez le besoin en détail (minimum 10 caractères)" wrapText="true"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <Label minWidth="170.0" prefWidth="170.0" style="-fx-text-fill: #0f172a; -fx-font-weight: bold;" text="Date publication * :"/>
+                            <DatePicker fx:id="dpDatePublication"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <Label minWidth="170.0" prefWidth="170.0" style="-fx-text-fill: #0f172a; -fx-font-weight: bold;" text="Urgence * :"/>
+                            <ComboBox fx:id="cbUrgence" maxWidth="320.0" prefWidth="260.0"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <Label minWidth="170.0" prefWidth="170.0" style="-fx-text-fill: #0f172a; -fx-font-weight: bold;" text="État annonce * :"/>
+                            <ComboBox fx:id="cbEtatAnnonce" maxWidth="320.0" prefWidth="260.0"/>
+                        </HBox>
+                    </VBox>
+                    <HBox spacing="10.0">
+                        <Button fx:id="btnAjouterAnnonce" defaultButton="true" mnemonicParsing="false" styleClass="btn-primary" text="Ajouter"/>
+                        <Button fx:id="btnModifierAnnonce" mnemonicParsing="false" styleClass="btn-secondary" text="Modifier"/>
+                        <Button fx:id="btnSupprimerAnnonce" mnemonicParsing="false" styleClass="btn-danger" text="Supprimer"/>
+                        <Button fx:id="btnEffacerAnnonce" mnemonicParsing="false" styleClass="btn-ghost" text="Effacer le formulaire"/>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+        </SplitPane>
+    </center>
+</BorderPane>

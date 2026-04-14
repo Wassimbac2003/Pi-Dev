@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane styleClass="page-root" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.mrigl.donationapp.controller.DonationController">
+    <top>
+        <VBox spacing="8.0" styleClass="hero-banner">
+            <padding>
+                <Insets bottom="10.0" left="16.0" right="16.0" top="10.0"/>
+            </padding>
+            <Label styleClass="hero-title" text="Gérez vos dons"/>
+            <Label styleClass="hero-subtitle" text="Historique des propositions de dons sans exposer les IDs."/>
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="8.0" style="-fx-padding: 8 10 10 10;">
+            <HBox spacing="10.0">
+                <VBox styleClass="stats-card" HBox.hgrow="ALWAYS">
+                    <Label styleClass="muted-label" text="Dons Totaux"/>
+                    <Label fx:id="lblTotalDons" styleClass="stats-value" text="0"/>
+                </VBox>
+                <VBox styleClass="stats-card" HBox.hgrow="ALWAYS">
+                    <Label styleClass="muted-label" text="Dons en Attente"/>
+                    <Label fx:id="lblPendingDons" styleClass="stats-value" text="0"/>
+                </VBox>
+                <VBox styleClass="stats-card" HBox.hgrow="ALWAYS">
+                    <Label styleClass="muted-label" text="Dons Acceptés"/>
+                    <Label fx:id="lblAcceptedDons" styleClass="stats-value" text="0"/>
+                </VBox>
+            </HBox>
+            <SplitPane dividerPositions="0.40" orientation="VERTICAL" VBox.vgrow="ALWAYS">
+            <VBox spacing="8.0" styleClass="panel-card">
+                <Label styleClass="section-title" text="Propositions de dons"/>
+                <ListView fx:id="listDonations" prefHeight="240.0" styleClass="modern-list"/>
+            </VBox>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="transparent-scroll">
+                <VBox spacing="10.0" styleClass="panel-card">
+                    <Label styleClass="section-title" text="Formulaire donation"/>
+                    <Label fx:id="lblErreursDonation" style="-fx-text-fill: #c62828; -fx-wrap-text: true;" wrapText="true"/>
+                    <VBox spacing="10.0">
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <Label minWidth="170.0" prefWidth="170.0" style="-fx-text-fill: #0f172a; -fx-font-weight: bold;" text="Type de don * :"/>
+                            <TextField fx:id="tfTypeDon" maxWidth="520.0" prefWidth="520.0" promptText="Ex: Boites de paracétamol 1g"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <Label minWidth="170.0" prefWidth="170.0" style="-fx-text-fill: #0f172a; -fx-font-weight: bold;" text="Quantité * :"/>
+                            <TextField fx:id="tfQuantite" maxWidth="220.0" promptText="Nombre entier positif"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <Label minWidth="170.0" prefWidth="170.0" style="-fx-text-fill: #0f172a; -fx-font-weight: bold;" text="Date du don * :"/>
+                            <DatePicker fx:id="dpDateDonation"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <Label minWidth="170.0" prefWidth="170.0" style="-fx-text-fill: #0f172a; -fx-font-weight: bold;" text="Statut * :"/>
+                            <ComboBox fx:id="cbStatut" maxWidth="320.0" prefWidth="260.0"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <Label minWidth="170.0" prefWidth="170.0" style="-fx-text-fill: #0f172a; -fx-font-weight: bold;" text="Annonce (optionnel) :"/>
+                            <ComboBox fx:id="cbAnnonce" maxWidth="600.0" prefWidth="520.0"/>
+                        </HBox>
+                    </VBox>
+                    <HBox spacing="10.0">
+                        <Button fx:id="btnAjouterDonation" defaultButton="true" mnemonicParsing="false" styleClass="btn-primary" text="Ajouter"/>
+                        <Button fx:id="btnModifierDonation" mnemonicParsing="false" styleClass="btn-secondary" text="Modifier"/>
+                        <Button fx:id="btnSupprimerDonation" mnemonicParsing="false" styleClass="btn-danger" text="Supprimer"/>
+                        <Button fx:id="btnEffacerDonation" mnemonicParsing="false" styleClass="btn-ghost" text="Effacer le formulaire"/>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+            </SplitPane>
+        </VBox>
+    </center>
+</BorderPane>
