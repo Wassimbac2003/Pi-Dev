@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="Controllers.HistoriqueRdvController"
+            fitToWidth="true"
+            style="-fx-background-color: #f0f4f8; -fx-background: #f0f4f8; -fx-border-color: transparent;">
+    <VBox fx:id="rootContainer" spacing="25" style="-fx-padding: 30 40 40 40; -fx-background-color: #f0f4f8;">
+        <!-- Built programmatically in controller -->
+    </VBox>
+</ScrollPane>

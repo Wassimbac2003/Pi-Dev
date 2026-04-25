@@ -4,6 +4,10 @@ public class rdv {
     private int id;
     private String date, hdebut, hfin, statut, motif, medecin, message;
     private int patient_id, medecin_user_id;
+    private Integer feedbackNote;
+    private String feedbackTags;
+    private String feedbackCommentaire;
+    private String feedbackDate;
 
     public rdv() {
     }
@@ -63,6 +67,17 @@ public class rdv {
     public int getMedecin_user_id() { return medecin_user_id; }
     public void setMedecin_user_id(int medecin_user_id) { this.medecin_user_id = medecin_user_id; }
 
+    public Integer getFeedbackNote() { return feedbackNote; }
+    public void setFeedbackNote(Integer feedbackNote) { this.feedbackNote = feedbackNote; }
+
+    public String getFeedbackTags() { return feedbackTags; }
+    public void setFeedbackTags(String feedbackTags) { this.feedbackTags = feedbackTags; }
+
+    public String getFeedbackCommentaire() { return feedbackCommentaire; }
+    public void setFeedbackCommentaire(String feedbackCommentaire) { this.feedbackCommentaire = feedbackCommentaire; }
+
+    public String getFeedbackDate() { return feedbackDate; }
+    public void setFeedbackDate(String feedbackDate) { this.feedbackDate = feedbackDate; }
     @Override
     public String toString() {
         return "rdv{" +

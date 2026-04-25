@@ -57,17 +57,42 @@ public class DisponibiliteService implements ICrud<disponibilite> {
         Statement st = connection.createStatement();
         ResultSet rs = st.executeQuery(sql);
         while (rs.next()) {
-            disponibilite d = new disponibilite(
-                    rs.getInt("id"),
-                    rs.getString("date_dispo"),
-                    rs.getString("hdebut"),
-                    rs.getString("h_fin"),
-                    rs.getString("statut"),
-                    rs.getInt("nbr_h"),
-                    rs.getInt("med_id")
-            );
-            list.add(d);
+            list.add(mapRow(rs));
         }
         return list;
+    }
+
+    // ========== MÉTHODES SPÉCIFIQUES AU WIZARD ==========
+
+    /**
+     * Récupérer les disponibilités d'un médecin pour une date précise
+     * Utilisé pour : créneaux dynamiques (midi, dimanche, annulations)
+     */
+    public List<disponibilite> findByMedecinAndDate(int medecinId, String date) throws SQLException {
+        List<disponibilite> list = new ArrayList<>();
+        String sql = "SELECT * FROM disponibilite WHERE med_id = ? AND date_dispo = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, medecinId);
+        ps.setString(2, date);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(mapRow(rs));
+        }
+        return list;
+    }
+
+    /**
+     * Mapper un ResultSet vers un objet disponibilite
+     */
+    private disponibilite mapRow(ResultSet rs) throws SQLException {
+        return new disponibilite(
+                rs.getInt("id"),
+                rs.getString("date_dispo"),
+                rs.getString("hdebut"),
+                rs.getString("h_fin"),
+                rs.getString("statut"),
+                rs.getInt("nbr_h"),
+                rs.getInt("med_id")
+        );
     }
 }

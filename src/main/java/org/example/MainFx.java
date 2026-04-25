@@ -12,6 +12,7 @@ public class MainFx extends Application {
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/MainLayout.fxml"));
         Scene scene = new Scene(root, 1400, 860);
+        scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
         stage.setTitle("VitalTech - Health Track");
         stage.setScene(scene);
         stage.show();

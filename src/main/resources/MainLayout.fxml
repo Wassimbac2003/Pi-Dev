@@ -67,7 +67,7 @@
         <VBox spacing="0" style="-fx-background-color: #f0f4f8;">
 
             <!-- HEADER -->
-            <HBox alignment="CENTER_LEFT" spacing="15" prefHeight="200"
+            <HBox alignment="CENTER_LEFT" spacing="15" prefHeight="70" minHeight="70" maxHeight="70"
                   style="-fx-background-color: white; -fx-padding: 0 30; -fx-border-color: #e8e8e8; -fx-border-width: 0 0 1 0;">
 
                 <Label fx:id="pageTitle" text="Bonjour, Nada"
@@ -75,7 +75,24 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <Label text="🔔" style="-fx-font-size: 18; -fx-cursor: hand;"/>
+                <!-- CLOCHE NOTIFICATION avec badge -->
+                <StackPane fx:id="notificationBell" style="-fx-cursor: hand;"
+                           prefWidth="28" prefHeight="28"
+                           maxWidth="28" maxHeight="28"
+                           minWidth="28" minHeight="28">
+                    <Label text="🔔" style="-fx-font-size: 18;" StackPane.alignment="CENTER"/>
+                    <Label fx:id="notifBadge" text="12"
+                           StackPane.alignment="TOP_RIGHT"
+                           style="-fx-background-color: #e53935;
+                  -fx-background-radius: 8;
+                  -fx-text-fill: white;
+                  -fx-font-size: 9;
+                  -fx-font-weight: bold;
+                  -fx-padding: 1 4;
+                  -fx-translate-x: 10;
+                  -fx-translate-y: -8;"
+                           visible="true"/>
+                </StackPane>
 
                 <VBox alignment="CENTER_RIGHT" spacing="2">
                     <Label text="nada hmaied" style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;"/>

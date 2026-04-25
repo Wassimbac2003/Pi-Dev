@@ -2,6 +2,7 @@ package Controllers;
 
 import Models.rdv;
 import Services.RdvService;
+import Services.SmsService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -22,10 +23,13 @@ public class ShowOneRdvController {
     @FXML private Label lblMois, lblJour, lblHeure;
     @FXML private Label lblInfoMedecin, lblInfoMotif, lblInfoDate, lblInfoHoraire, lblInfoStatut;
     @FXML private Label lblMessage, lblDateCreation;
+    @FXML private Label lblSmsInfo;
     @FXML private Button btnRetour, btnModifier, btnModifierBas, btnAnnuler;
+    @FXML private Button btnSmsRappel;
 
     private rdv rdvActuel;
     private RdvService rdvService = new RdvService();
+    private SmsService smsService = new SmsService();
 
     public void initData(rdv r) {
         this.rdvActuel = r;
@@ -70,6 +74,39 @@ public class ShowOneRdvController {
 
         // Message
         lblMessage.setText(r.getMessage() != null && !r.getMessage().isEmpty() ? r.getMessage() : "Aucun message");
+
+        // ── Configurer le bouton SMS selon la date ──
+        configurerBoutonSms(r);
+    }
+
+    /**
+     * Configure le bouton SMS :
+     * - Vert + actif si le RDV est aujourd'hui
+     * - Gris + désactivé sinon (avec message explicatif)
+     */
+    private void configurerBoutonSms(rdv r) {
+        // ── MODE DEMO : bouton toujours actif pour tester devant le prof ──
+        // TODO: remettre la vérification estAujourdhui() après la démo
+        btnSmsRappel.setDisable(false);
+        btnSmsRappel.setText("📱 Envoyer SMS Rappel");
+        btnSmsRappel.setStyle(
+                "-fx-background-color: linear-gradient(to right, #16a34a, #22c55e); " +
+                        "-fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; " +
+                        "-fx-background-radius: 10; -fx-padding: 14; -fx-cursor: hand;"
+        );
+        btnSmsRappel.setOnMouseEntered(e -> btnSmsRappel.setStyle(
+                "-fx-background-color: linear-gradient(to right, #15803d, #16a34a); " +
+                        "-fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; " +
+                        "-fx-background-radius: 10; -fx-padding: 14; -fx-cursor: hand; " +
+                        "-fx-effect: dropshadow(gaussian, rgba(22,163,74,0.4), 10, 0, 0, 3);"
+        ));
+        btnSmsRappel.setOnMouseExited(e -> btnSmsRappel.setStyle(
+                "-fx-background-color: linear-gradient(to right, #16a34a, #22c55e); " +
+                        "-fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; " +
+                        "-fx-background-radius: 10; -fx-padding: 14; -fx-cursor: hand;"
+        ));
+        lblSmsInfo.setText("✅ Cliquez pour recevoir un SMS de rappel.");
+        lblSmsInfo.setStyle("-fx-font-size: 11; -fx-text-fill: #16a34a;");
     }
 
     @FXML
@@ -78,6 +115,82 @@ public class ShowOneRdvController {
         btnModifier.setOnAction(e -> modifierRdv());
         btnModifierBas.setOnAction(e -> modifierRdv());
         btnAnnuler.setOnAction(e -> annulerRdv());
+        btnSmsRappel.setOnAction(e -> envoyerSmsRappel());
+    }
+
+    // ========== ENVOI SMS TWILIO ==========
+    private void envoyerSmsRappel() {
+        if (rdvActuel == null) return;
+
+        // MODE DEMO : pas de vérification de date
+        // TODO: remettre la vérification estAujourdhui() après la démo
+
+        // Confirmation avant envoi
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Envoyer SMS de rappel");
+        confirm.setHeaderText("📱 Confirmer l'envoi du SMS");
+        confirm.setContentText(
+                "Un SMS de rappel sera envoyé pour :\n\n" +
+                        "👨‍⚕️ " + rdvActuel.getMedecin() + "\n" +
+                        "🕐 Aujourd'hui à " + rdvActuel.getHdebut() + "\n" +
+                        "📋 " + rdvActuel.getMotif() + "\n\n" +
+                        "Confirmer l'envoi ?"
+        );
+
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                // Désactiver le bouton pendant l'envoi
+                btnSmsRappel.setDisable(true);
+                btnSmsRappel.setText("⏳ Envoi en cours...");
+                btnSmsRappel.setStyle(
+                        "-fx-background-color: #fbbf24; -fx-text-fill: white; -fx-font-size: 13; " +
+                                "-fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 14;"
+                );
+
+                // Envoyer le SMS
+                boolean ok = smsService.envoyerRappel(
+                        rdvActuel.getMedecin(),
+                        rdvActuel.getDate(),
+                        rdvActuel.getHdebut(),
+                        rdvActuel.getMotif()
+                );
+
+                if (ok) {
+                    // Succès → bouton vert "Envoyé ✓"
+                    btnSmsRappel.setText("✅ SMS envoyé avec succès !");
+                    btnSmsRappel.setStyle(
+                            "-fx-background-color: #16a34a; -fx-text-fill: white; -fx-font-size: 13; " +
+                                    "-fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 14;"
+                    );
+                    btnSmsRappel.setDisable(true);
+                    lblSmsInfo.setText("✅ SMS de rappel envoyé avec succès !");
+                    lblSmsInfo.setStyle("-fx-font-size: 11; -fx-text-fill: #16a34a; -fx-font-weight: bold;");
+
+                    Alert success = new Alert(Alert.AlertType.INFORMATION);
+                    success.setTitle("Succès");
+                    success.setHeaderText(null);
+                    success.setContentText("✅ SMS de rappel envoyé avec succès !");
+                    success.show();
+                } else {
+                    // Erreur → rétablir le bouton
+                    btnSmsRappel.setDisable(false);
+                    btnSmsRappel.setText("📱 Réessayer l'envoi");
+                    btnSmsRappel.setStyle(
+                            "-fx-background-color: linear-gradient(to right, #16a34a, #22c55e); " +
+                                    "-fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; " +
+                                    "-fx-background-radius: 10; -fx-padding: 14; -fx-cursor: hand;"
+                    );
+                    lblSmsInfo.setText("❌ Erreur lors de l'envoi. Réessayez.");
+                    lblSmsInfo.setStyle("-fx-font-size: 11; -fx-text-fill: #e53935;");
+
+                    Alert error = new Alert(Alert.AlertType.ERROR);
+                    error.setTitle("Erreur");
+                    error.setHeaderText(null);
+                    error.setContentText("❌ Erreur lors de l'envoi du SMS. Vérifiez votre connexion internet.");
+                    error.show();
+                }
+            }
+        });
     }
 
     private void retourListe() {
@@ -94,7 +207,6 @@ public class ShowOneRdvController {
     }
 
     private void modifierRdv() {
-        // Ouvre le même popup modifier que AfficherRdvController
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Modifier le rendez-vous");
 
@@ -162,7 +274,7 @@ public class ShowOneRdvController {
                 rdvActuel.setMessage(messageArea.getText());
 
                 rdvService.update(rdvActuel);
-                initData(rdvActuel); // Rafraîchir la page
+                initData(rdvActuel);
                 Alert a = new Alert(Alert.AlertType.INFORMATION);
                 a.setTitle("Succès");
                 a.setContentText("RDV modifié !");

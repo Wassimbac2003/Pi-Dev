@@ -12,6 +12,7 @@ public class MainAdmin extends Application {
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/AdminLayout.fxml"));
         Scene scene = new Scene(root, 1400, 860);
+        scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
         stage.setTitle("VitalTech - Admin");
         stage.setScene(scene);
         stage.show();

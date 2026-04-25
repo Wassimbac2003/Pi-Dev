@@ -75,15 +75,32 @@ public class RdvService implements ICrud<rdv> {
                     rs.getInt("patient_id"),
                     rs.getInt("medecin_user_id")
             );
+            // Feedback fields
+            r.setFeedbackNote(rs.getObject("feedback_note") != null ? rs.getInt("feedback_note") : null);
+            r.setFeedbackTags(rs.getString("feedback_tags"));
+            r.setFeedbackCommentaire(rs.getString("feedback_commentaire"));
+            r.setFeedbackDate(rs.getString("feedback_date"));
+
             list.add(r);
         }
         return list;
     }
+
     public void updateStatut(int id, String statut) throws SQLException {
         String sql = "UPDATE rdv SET statut=? WHERE id=?";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, statut);
         ps.setInt(2, id);
+        ps.executeUpdate();
+    }
+
+    public void updateFeedback(int id, int note, String tags, String commentaire) throws SQLException {
+        String sql = "UPDATE rdv SET feedback_note=?, feedback_tags=?, feedback_commentaire=?, feedback_date=NOW(), statut='Termine' WHERE id=?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, note);
+        ps.setString(2, tags);
+        ps.setString(3, commentaire);
+        ps.setInt(4, id);
         ps.executeUpdate();
     }
 }

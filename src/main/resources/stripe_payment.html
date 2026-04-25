@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        .header p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .amount-box {
+            background: linear-gradient(135deg, #4a6cf7, #6a3ced);
+            color: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .amount-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.8;
+        }
+        .amount-value {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 4px 0;
+        }
+        .amount-method {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        #payment-element {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        #error-message {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #b91c1c;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        #submit-btn {
+            width: 100%;
+            background: #4a6cf7;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #submit-btn:hover {
+            background: #3b5de7;
+        }
+        #submit-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .test-card {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            font-size: 12px;
+        }
+        .test-card strong {
+            color: #92400e;
+        }
+        .test-card .mono {
+            font-family: 'Courier New', monospace;
+            color: #b45309;
+            letter-spacing: 1px;
+        }
+
+        .secure-badges {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 16px;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .success-screen {
+            display: none;
+            text-align: center;
+            padding: 30px 0;
+        }
+        .success-icon {
+            width: 70px;
+            height: 70px;
+            background: #dcfce7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 32px;
+        }
+        .success-screen h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #15803d;
+            margin-bottom: 8px;
+        }
+        .success-screen p {
+            font-size: 13px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Formulaire de paiement -->
+<div id="payment-form-container">
+    <div class="header">
+        <h2>Paiement securise</h2>
+        <p>Consultation medicale - VitalTech</p>
+    </div>
+
+    <div class="amount-box">
+        <div class="amount-label">Montant a payer</div>
+        <div class="amount-value">70 DT</div>
+        <div class="amount-method">Carte bancaire - Stripe</div>
+    </div>
+
+    <div id="payment-element">
+        <p style="text-align:center; color:#94a3b8; padding:20px;">Chargement du formulaire...</p>
+    </div>
+
+    <div id="error-message"></div>
+
+    <button id="submit-btn" type="button" onclick="handlePayment()" disabled>
+        Payer 70 DT
+    </button>
+
+    <div class="test-card">
+        <strong>Carte de test Stripe :</strong><br>
+        <span class="mono">4242 4242 4242 4242</span> &middot; 12/26 &middot; 123
+    </div>
+
+    <div class="secure-badges">
+        <span>Chiffre SSL</span>
+        <span>&middot;</span>
+        <span>Powered by Stripe</span>
+    </div>
+</div>
+
+<!-- Ecran de succes -->
+<div id="success-screen" class="success-screen">
+    <div class="success-icon">OK</div>
+    <h3>Paiement reussi !</h3>
+    <p>Votre consultation a ete payee avec succes.</p>
+    <p style="margin-top:12px; font-size:11px; color:#94a3b8;">Fermeture automatique...</p>
+</div>
+
+<script>
+    const STRIPE_PUBLIC_KEY = '{{STRIPE_PUBLIC_KEY}}';
+    const CLIENT_SECRET = '{{CLIENT_SECRET}}';
+
+    let stripe, elements, paymentElement;
+
+    async function initStripe() {
+        try {
+            stripe = Stripe(STRIPE_PUBLIC_KEY);
+            elements = stripe.elements({
+                clientSecret: CLIENT_SECRET,
+                appearance: {
+                    theme: 'stripe',
+                    variables: {
+                        colorPrimary: '#4a6cf7',
+                        colorBackground: '#ffffff',
+                        colorText: '#1e293b',
+                        borderRadius: '10px',
+                        fontFamily: 'Segoe UI, sans-serif'
+                    }
+                }
+            });
+
+            paymentElement = elements.create('payment');
+            paymentElement.mount('#payment-element');
+
+            paymentElement.on('ready', function() {
+                document.getElementById('submit-btn').disabled = false;
+            });
+
+            paymentElement.on('change', function(event) {
+                if (event.error) {
+                    showError(event.error.message);
+                } else {
+                    hideError();
+                }
+            });
+
+        } catch (e) {
+            showError('Impossible de charger Stripe : ' + e.message);
+        }
+    }
+
+    async function handlePayment() {
+        var btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Traitement en cours...';
+        hideError();
+
+        try {
+            var result = await stripe.confirmPayment({
+                elements: elements,
+                confirmParams: {
+                    return_url: 'https://vitaltech.local/success'
+                },
+                redirect: 'if_required'
+            });
+
+            if (result.error) {
+                showError(result.error.message || 'Paiement refuse.');
+                btn.disabled = false;
+                btn.innerHTML = 'Payer 70 DT';
+                return;
+            }
+
+            if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+                // Succes ! Envoyer le paymentIntent ID a Java via alert
+                document.getElementById('payment-form-container').style.display = 'none';
+                document.getElementById('success-screen').style.display = 'block';
+
+                // Le alert est intercepte par Java WebEngine.setOnAlert()
+                setTimeout(function() {
+                    alert('STRIPE_SUCCESS:' + result.paymentIntent.id);
+                }, 1500);
+            } else {
+                showError('Statut inattendu : ' + (result.paymentIntent ? result.paymentIntent.status : '?'));
+                btn.disabled = false;
+                btn.innerHTML = 'Payer 70 DT';
+            }
+
+        } catch (e) {
+            showError('Erreur : ' + e.message);
+            btn.disabled = false;
+            btn.innerHTML = 'Payer 70 DT';
+        }
+    }
+
+    function showError(msg) {
+        var el = document.getElementById('error-message');
+        el.textContent = msg;
+        el.style.display = 'block';
+    }
+
+    function hideError() {
+        document.getElementById('error-message').style.display = 'none';
+    }
+
+    // Demarrer
+    initStripe();
+</script>
+
+</body>
+</html>
