@@ -6,9 +6,12 @@ import java.sql.SQLException;
 
 public class MyDb {
     private Connection connection;
-    private final String DB_URL = "jdbc:mysql://localhost:3306/health_track";
-    private final String USER = "root";
-    private final String PASS = "";
+    /** Même logique que com.healthtrack.tools.MyConnection — ne pas confondre avec annonce_db. */
+    private final String DB_URL = System.getenv().getOrDefault(
+            "HEALTHTRACK_DB_URL",
+            "jdbc:mysql://127.0.0.1:3306/healthcare?serverTimezone=UTC");
+    private final String USER = System.getenv().getOrDefault("HEALTHTRACK_DB_USER", "root");
+    private final String PASS = System.getenv().getOrDefault("HEALTHTRACK_DB_PASSWORD", "");
     private static MyDb instance;
 
     private MyDb() {

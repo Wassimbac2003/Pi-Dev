@@ -12,7 +12,8 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>17.0.10</javafx.version>
-        <app.mainClass>com.healthtrack.App</app.mainClass>
+        <!-- Défaut : ton app annonces/dons → base annonce_db (voir DataRepository). -->
+        <app.mainClass>com.mrigl.donationapp.MainApp</app.mainClass>
     </properties>
 
     <dependencies>
@@ -69,4 +70,14 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- Autre appli dans le même dépôt : mvn javafx:run -Phealthtrack (base séparée, voir HEALTHTRACK_DB_URL) -->
+    <profiles>
+        <profile>
+            <id>healthtrack</id>
+            <properties>
+                <app.mainClass>com.healthtrack.App</app.mainClass>
+            </properties>
+        </profile>
+    </profiles>
 </project>

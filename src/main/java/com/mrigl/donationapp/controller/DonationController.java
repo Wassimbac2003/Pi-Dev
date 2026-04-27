@@ -3,6 +3,7 @@ package com.mrigl.donationapp.controller;
 import com.mrigl.donationapp.model.Annonce;
 import com.mrigl.donationapp.model.Donation;
 import com.mrigl.donationapp.service.DataRepository;
+import com.mrigl.donationapp.service.TextToSpeechService;
 import com.mrigl.donationapp.service.ValidationService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -35,6 +36,7 @@ import java.util.ResourceBundle;
 public class DonationController implements Initializable {
 
     private final DataRepository store = DataRepository.getInstance();
+    private final TextToSpeechService textToSpeechService = new TextToSpeechService();
 
     @FXML
     private ListView<Donation> listDonations;
@@ -356,15 +358,16 @@ public class DonationController implements Initializable {
         dialog.initModality(Modality.APPLICATION_MODAL);
 
         ButtonType modifyType = new ButtonType("Modifier", ButtonBar.ButtonData.OK_DONE);
+        ButtonType readType = new ButtonType("Lire à voix haute", ButtonBar.ButtonData.OTHER);
+        ButtonType stopReadType = new ButtonType("Arrêter la lecture", ButtonBar.ButtonData.OTHER);
         ButtonType deleteType = new ButtonType("Supprimer", ButtonBar.ButtonData.LEFT);
-        dialog.getDialogPane().getButtonTypes().addAll(modifyType, deleteType, ButtonType.CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(modifyType, readType, stopReadType, deleteType, ButtonType.CLOSE);
 
-        String annonceTxt = "Aucune";
-        if (donation.getAnnonceId() != null) {
-            annonceTxt = store.findAnnonce(donation.getAnnonceId())
-                    .map(Annonce::getTitreAnnonce)
-                    .orElse("Annonce supprimée");
-        }
+        final String annonceTxt = donation.getAnnonceId() == null
+                ? "Aucune"
+                : store.findAnnonce(donation.getAnnonceId())
+                        .map(Annonce::getTitreAnnonce)
+                        .orElse("Annonce supprimée");
 
         Label typeDon = new Label("Type de don : " + safe(donation.getTypeDon()));
         typeDon.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
@@ -377,6 +380,23 @@ public class DonationController implements Initializable {
         content.setPadding(new Insets(10));
         content.setStyle("-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #e2e8f0; -fx-border-radius: 14;");
         dialog.getDialogPane().setContent(content);
+
+        Button readButton = (Button) dialog.getDialogPane().lookupButton(readType);
+        readButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            event.consume();
+            speakText(
+                    "Donation. Type de don " + safe(donation.getTypeDon())
+                            + ". Quantite " + (donation.getQuantite() == null ? "non définie" : donation.getQuantite())
+                            + ". Date du don " + (donation.getDateDonation() == null ? "non définie" : donation.getDateDonation())
+                            + ". Statut " + safe(donation.getStatut())
+                            + ". Annonce liee " + annonceTxt + "."
+            );
+        });
+        Button stopReadButton = (Button) dialog.getDialogPane().lookupButton(stopReadType);
+        stopReadButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            event.consume();
+            stopSpeak();
+        });
 
         dialog.showAndWait().ifPresent(bt -> {
             if (bt == modifyType) {
@@ -397,5 +417,21 @@ public class DonationController implements Initializable {
         suppressSelectionDialogs = true;
         listDonations.getSelectionModel().clearSelection();
         Platform.runLater(() -> suppressSelectionDialogs = false);
+    }
+
+    private void speakText(String text) {
+        if (!textToSpeechService.isSupported()) {
+            Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setTitle("Lecture vocale");
+            info.setHeaderText("Lecture vocale indisponible");
+            info.setContentText("Cette fonctionnalité est disponible sur Windows.");
+            info.showAndWait();
+            return;
+        }
+        textToSpeechService.speakAsync(text);
+    }
+
+    private void stopSpeak() {
+        textToSpeechService.stop();
     }
 }

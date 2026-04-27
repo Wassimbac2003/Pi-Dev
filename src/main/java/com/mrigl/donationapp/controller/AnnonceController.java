@@ -3,6 +3,9 @@ package com.mrigl.donationapp.controller;
 import com.mrigl.donationapp.model.Annonce;
 import com.mrigl.donationapp.model.Donation;
 import com.mrigl.donationapp.service.DataRepository;
+import com.mrigl.donationapp.service.FraudDetectionService;
+import com.mrigl.donationapp.service.HybridFraudDetectionService;
+import com.mrigl.donationapp.service.TextToSpeechService;
 import com.mrigl.donationapp.service.ValidationService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -41,6 +44,8 @@ import java.util.ResourceBundle;
 public class AnnonceController implements Initializable {
 
     private final DataRepository store = DataRepository.getInstance();
+    private final HybridFraudDetectionService fraudDetectionService = new HybridFraudDetectionService();
+    private final TextToSpeechService textToSpeechService = new TextToSpeechService();
 
     @FXML
     private ListView<Annonce> listAnnonces;
@@ -191,8 +196,48 @@ public class AnnonceController implements Initializable {
             lblErreursAnnonce.setText(String.join("\n", err));
             return;
         }
+        FraudDetectionService.FraudReport report = fraudDetectionService.analyze(a, store.annoncesProperty());
+        if (!confirmSuspiciousAnnonce(report)) {
+            return;
+        }
+        suppressSelectionDialogs = true;
         store.createAnnonce(a);
-        clearForm();
+        if (report.suspicious() && report.riskScore() > 0.69d) {
+            Annonce persisted = store.findLastAnnonceByContent(a).orElse(a);
+            store.createFraudNotification(persisted, report.riskScore(), report.reasons());
+        }
+        clearFormWithoutTouchingSelection();
+        listAnnonces.getSelectionModel().clearSelection();
+        Platform.runLater(() -> suppressSelectionDialogs = false);
+    }
+
+    private boolean confirmSuspiciousAnnonce(FraudDetectionService.FraudReport report) {
+        if (!report.suspicious()) {
+            return true;
+        }
+
+        StringBuilder message = new StringBuilder();
+        message.append("Cette annonce semble potentiellement spam/frauduleuse.\n");
+        message.append("Score de risque: ").append((int) Math.round(report.riskScore() * 100)).append("%\n\n");
+        message.append("Raisons détectées:\n");
+        if (report.reasons().isEmpty()) {
+            message.append("- Analyse heuristique déclenchée.\n");
+        } else {
+            for (String reason : report.reasons()) {
+                message.append("- ").append(reason).append('\n');
+            }
+        }
+        message.append("\nVoulez-vous publier quand même ?");
+
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Détection de spam");
+        alert.setHeaderText("Annonce suspecte détectée");
+        alert.setContentText(message.toString());
+
+        ButtonType cancelType = new ButtonType("Annuler");
+        ButtonType continueType = new ButtonType("Publier quand même", ButtonBar.ButtonData.OK_DONE);
+        alert.getButtonTypes().setAll(cancelType, continueType);
+        return alert.showAndWait().orElse(cancelType) == continueType;
     }
 
     private void onModifier() {
@@ -259,6 +304,16 @@ public class AnnonceController implements Initializable {
         lblErreursAnnonce.setText("");
     }
 
+    private void clearFormWithoutTouchingSelection() {
+        editing = null;
+        tfTitre.clear();
+        taDescription.clear();
+        dpDatePublication.setValue(LocalDate.now());
+        cbUrgence.getSelectionModel().clearSelection();
+        cbEtatAnnonce.getSelectionModel().clearSelection();
+        lblErreursAnnonce.setText("");
+    }
+
     private void openAnnonceDetails(Annonce annonce) {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Détail annonce");
@@ -268,8 +323,10 @@ public class AnnonceController implements Initializable {
 
         ButtonType modifyType = new ButtonType("Modifier", ButtonBar.ButtonData.OK_DONE);
         ButtonType addDonationType = new ButtonType("Proposer un don", ButtonBar.ButtonData.OTHER);
+        ButtonType readType = new ButtonType("Lire à voix haute", ButtonBar.ButtonData.OTHER);
+        ButtonType stopReadType = new ButtonType("Arrêter la lecture", ButtonBar.ButtonData.OTHER);
         ButtonType deleteType = new ButtonType("Supprimer", ButtonBar.ButtonData.LEFT);
-        dialog.getDialogPane().getButtonTypes().addAll(modifyType, addDonationType, deleteType, ButtonType.CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(modifyType, addDonationType, readType, stopReadType, deleteType, ButtonType.CLOSE);
 
         Label titre = new Label("Titre : " + safe(annonce.getTitreAnnonce()));
         titre.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
@@ -302,6 +359,23 @@ public class AnnonceController implements Initializable {
         Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
         stage.setMinWidth(720);
         stage.setMinHeight(420);
+
+        Button readButton = (Button) dialog.getDialogPane().lookupButton(readType);
+        readButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            event.consume();
+            speakText(
+                    "Annonce " + safe(annonce.getTitreAnnonce())
+                            + ". Description. " + safe(annonce.getDescription())
+                            + ". Date publication " + (annonce.getDatePublication() == null ? "non définie" : annonce.getDatePublication())
+                            + ". Urgence " + safe(annonce.getUrgence())
+                            + ". Etat " + safe(annonce.getEtatAnnonce()) + "."
+            );
+        });
+        Button stopReadButton = (Button) dialog.getDialogPane().lookupButton(stopReadType);
+        stopReadButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            event.consume();
+            stopSpeak();
+        });
 
         dialog.showAndWait().ifPresent(bt -> {
             if (bt == modifyType) {
@@ -463,5 +537,21 @@ public class AnnonceController implements Initializable {
         suppressSelectionDialogs = true;
         listAnnonces.getSelectionModel().clearSelection();
         Platform.runLater(() -> suppressSelectionDialogs = false);
+    }
+
+    private void speakText(String text) {
+        if (!textToSpeechService.isSupported()) {
+            Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setTitle("Lecture vocale");
+            info.setHeaderText("Lecture vocale indisponible");
+            info.setContentText("Cette fonctionnalité est disponible sur Windows.");
+            info.showAndWait();
+            return;
+        }
+        textToSpeechService.speakAsync(text);
+    }
+
+    private void stopSpeak() {
+        textToSpeechService.stop();
     }
 }

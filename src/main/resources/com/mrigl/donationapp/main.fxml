@@ -55,6 +55,8 @@
                 <HBox spacing="8.0">
                     <Button fx:id="btnFrontMode" onAction="#switchToFront" styleClass="btn-ghost" text="Front Office"/>
                     <Button fx:id="btnBackMode" onAction="#switchToBack" styleClass="btn-ghost" text="Back Office"/>
+                    <Button fx:id="btnSpamNotifications" onAction="#openSpamNotifications" styleClass="btn-ghost" text="Notifications spam"/>
+                    <Label fx:id="lblSpamNotifCount" styleClass="notif-badge" text="0"/>
                 </HBox>
                 <Region minWidth="10.0"/>
                 <TextField fx:id="tfGlobalSearch" prefWidth="260.0" promptText="Rechercher..."/>
@@ -81,6 +83,29 @@
                 <VBox fx:id="statsCard3" styleClass="stats-card" HBox.hgrow="ALWAYS">
                     <Label fx:id="lblStat3Title" styleClass="muted-label" text="Dons acceptés"/>
                     <Label fx:id="lblAcceptedDons" styleClass="stats-value" text="0"/>
+                </VBox>
+            </HBox>
+
+            <HBox fx:id="backOfficeInsightsRow" managed="false" spacing="10.0" visible="false">
+                <VBox styleClass="stats-card" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblInsight1Title" styleClass="muted-label" text="Activité annonces"/>
+                    <Label fx:id="lblInsight1Value" styleClass="stats-value" text="—"/>
+                    <Label fx:id="lblInsight1Sub" styleClass="muted-label" text="—"/>
+                </VBox>
+                <VBox styleClass="stats-card" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblInsight2Title" styleClass="muted-label" text="Couverture des besoins"/>
+                    <Label fx:id="lblInsight2Value" styleClass="stats-value" text="—"/>
+                    <Label fx:id="lblInsight2Sub" styleClass="muted-label" text="—"/>
+                </VBox>
+                <VBox styleClass="stats-card" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblInsight3Title" styleClass="muted-label" text="Pipeline des dons"/>
+                    <Label fx:id="lblInsight3Value" styleClass="stats-value" text="—"/>
+                    <Label fx:id="lblInsight3Sub" styleClass="muted-label" text="—"/>
+                </VBox>
+                <VBox styleClass="stats-card" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblInsight4Title" styleClass="muted-label" text="Conformité anti-spam"/>
+                    <Label fx:id="lblInsight4Value" styleClass="stats-value" text="—"/>
+                    <Label fx:id="lblInsight4Sub" styleClass="muted-label" text="—"/>
                 </VBox>
             </HBox>
 

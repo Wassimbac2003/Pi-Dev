@@ -2,7 +2,14 @@ package com.mrigl.donationapp.controller;
 
 import com.mrigl.donationapp.model.Annonce;
 import com.mrigl.donationapp.model.Donation;
+import com.mrigl.donationapp.model.FraudNotification;
 import com.mrigl.donationapp.service.DataRepository;
+import com.mrigl.donationapp.service.FraudDetectionService;
+import com.mrigl.donationapp.service.HybridFraudDetectionService;
+import com.mrigl.donationapp.service.HybridMatchingService;
+import com.mrigl.donationapp.service.MatchingService;
+import com.mrigl.donationapp.service.TextToSpeechService;
+import com.mrigl.donationapp.service.TranslationService;
 import com.mrigl.donationapp.service.ValidationService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -25,12 +32,17 @@ import javafx.stage.Window;
 
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class MainDashboardController implements Initializable {
     private final DataRepository store = DataRepository.getInstance();
+    private final HybridMatchingService matchingService = new HybridMatchingService();
+    private final TranslationService translationService = new TranslationService();
+    private final HybridFraudDetectionService fraudDetectionService = new HybridFraudDetectionService();
+    private final TextToSpeechService textToSpeechService = new TextToSpeechService();
     private boolean suppressSelectionDialogs;
     private boolean backOfficeMode;
 
@@ -39,6 +51,7 @@ public class MainDashboardController implements Initializable {
     @FXML private Button btnShowDonations;
     @FXML private Button btnFrontMode;
     @FXML private Button btnBackMode;
+    @FXML private Button btnSpamNotifications;
     @FXML private Button btnNav1;
     @FXML private Button btnNav2;
     @FXML private Button btnNav3;
@@ -68,10 +81,24 @@ public class MainDashboardController implements Initializable {
     @FXML private Label lblTotalAnnonces;
     @FXML private Label lblPendingDons;
     @FXML private Label lblAcceptedDons;
+    @FXML private Label lblSpamNotifCount;
     @FXML private VBox annoncesPanel;
     @FXML private VBox donationsPanel;
+    @FXML private HBox backOfficeInsightsRow;
     @FXML private ListView<Annonce> listAnnonces;
     @FXML private ListView<Donation> listDonations;
+    @FXML private Label lblInsight1Title;
+    @FXML private Label lblInsight1Value;
+    @FXML private Label lblInsight1Sub;
+    @FXML private Label lblInsight2Title;
+    @FXML private Label lblInsight2Value;
+    @FXML private Label lblInsight2Sub;
+    @FXML private Label lblInsight3Title;
+    @FXML private Label lblInsight3Value;
+    @FXML private Label lblInsight3Sub;
+    @FXML private Label lblInsight4Title;
+    @FXML private Label lblInsight4Value;
+    @FXML private Label lblInsight4Sub;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -93,6 +120,7 @@ public class MainDashboardController implements Initializable {
         listAnnonces.setItems(annonces);
         listDonations.setItems(dons);
         refreshStats();
+        refreshSpamNotificationBadge();
 
         tfGlobalSearch.textProperty().addListener((obs, ov, term) -> {
             String t = term == null ? "" : term.trim().toLowerCase();
@@ -164,8 +192,16 @@ public class MainDashboardController implements Initializable {
     @FXML private void showAll() { annoncesPanel.setManaged(true); annoncesPanel.setVisible(true); donationsPanel.setManaged(true); donationsPanel.setVisible(true); activate(btnShowAll); }
     @FXML private void showAnnoncesOnly() { annoncesPanel.setManaged(true); annoncesPanel.setVisible(true); donationsPanel.setManaged(false); donationsPanel.setVisible(false); activate(btnShowAnnonces); }
     @FXML private void showDonationsOnly() { annoncesPanel.setManaged(false); annoncesPanel.setVisible(false); donationsPanel.setManaged(true); donationsPanel.setVisible(true); activate(btnShowDonations); }
-    @FXML private void switchToFront() { backOfficeMode = false; applyMode(); }
-    @FXML private void switchToBack() { backOfficeMode = true; applyMode(); }
+    @FXML private void switchToFront() {
+        backOfficeMode = false;
+        applyMode();
+        refreshSpamNotificationBadge();
+    }
+    @FXML private void switchToBack() {
+        backOfficeMode = true;
+        applyMode();
+        refreshSpamNotificationBadge();
+    }
     @FXML private void onAddAnnonceTop() { openAnnonceEditor(new Annonce(), true); }
     @FXML private void onAddDonationTop() { openDonationEditor(new Donation(), true); }
     @FXML private void toggleDonAnnoncesMenu() {
@@ -180,16 +216,44 @@ public class MainDashboardController implements Initializable {
     private void openAnnonceDetails(Annonce a) {
         FormStage form = buildFormStage("Détail annonce", "Consultez et gérez cette annonce");
         Stage stage = form.stage();
-        TextArea desc = new TextArea(safe(a.getDescription())); desc.setWrapText(true); desc.setEditable(false); desc.setPrefRowCount(6);
-        Label title = new Label("Titre : " + safe(a.getTitreAnnonce())); title.getStyleClass().add("dialog-title");
-        VBox box = new VBox(10, title, new Label("Description :"), desc,
-                new Label("Date publication : " + a.getDatePublication()), new Label("Urgence : " + safe(a.getUrgence())), new Label("État : " + safe(a.getEtatAnnonce())));
+        String rawTitre = safe(a.getTitreAnnonce());
+        String rawDesc = safe(a.getDescription());
+        String rawDate = String.valueOf(a.getDatePublication());
+        String rawUrgence = safe(a.getUrgence());
+        String rawEtat = safe(a.getEtatAnnonce());
+
+        TextArea desc = new TextArea(rawDesc); desc.setWrapText(true); desc.setEditable(false); desc.setPrefRowCount(6);
+        Label title = new Label("Titre : " + rawTitre); title.getStyleClass().add("dialog-title");
+        Label descLabel = new Label("Description :");
+        Label dateLabel = new Label("Date publication : " + rawDate);
+        Label urgenceLabel = new Label("Urgence : " + rawUrgence);
+        Label etatLabel = new Label("État : " + rawEtat);
+
+        ComboBox<String> langChoice = new ComboBox<>(FXCollections.observableArrayList("fr", "en", "ar"));
+        langChoice.setValue("fr");
+        Button btnTranslate = new Button("Traduire");
+        btnTranslate.getStyleClass().add("btn-ghost");
+        btnTranslate.setOnAction(e -> {
+            String lang = langChoice.getValue();
+            title.setText(tr("Titre : " + rawTitre, lang));
+            descLabel.setText(tr("Description :", lang));
+            desc.setText(tr(rawDesc, lang));
+            dateLabel.setText(tr("Date publication : " + rawDate, lang));
+            urgenceLabel.setText(tr("Urgence : " + rawUrgence, lang));
+            etatLabel.setText(tr("État : " + rawEtat, lang));
+        });
+        HBox translateBar = new HBox(10, new Label("Langue :"), langChoice, btnTranslate);
+        translateBar.setAlignment(Pos.CENTER_LEFT);
+
+        VBox box = new VBox(10, translateBar, title, descLabel, desc, dateLabel, urgenceLabel, etatLabel);
         box.setPadding(new Insets(12)); box.getStyleClass().add(backOfficeMode ? "back-detail-card" : "panel-card");
         Button btnSupprimer = new Button("Supprimer"); btnSupprimer.getStyleClass().add("btn-danger");
         Button btnProposerDon = new Button("Proposer un don"); btnProposerDon.getStyleClass().add("btn-secondary");
+        Button btnRead = new Button("Lire à voix haute"); btnRead.getStyleClass().add("btn-ghost");
+        Button btnStopRead = new Button("Arrêter la lecture"); btnStopRead.getStyleClass().add("btn-ghost");
         Button btnModifier = new Button("Modifier"); btnModifier.getStyleClass().add("btn-primary");
         Button btnFermer = new Button("Fermer"); btnFermer.getStyleClass().add("btn-ghost");
-        HBox actions = new HBox(10, btnSupprimer, btnProposerDon, btnModifier, btnFermer);
+        HBox actions = new HBox(10, btnSupprimer, btnProposerDon, btnRead, btnStopRead, btnModifier, btnFermer);
         actions.setPadding(new Insets(12));
         VBox content = new VBox(10, box, actions);
         form.body().getChildren().add(content);
@@ -206,6 +270,11 @@ public class MainDashboardController implements Initializable {
                 openDonationEditor(dn, true);
             });
         });
+        btnRead.setOnAction(e -> speakText(
+                "Annonce " + rawTitre + ". Description. " + rawDesc + ". Date publication " + rawDate
+                        + ". Urgence " + rawUrgence + ". Etat " + rawEtat + "."
+        ));
+        btnStopRead.setOnAction(e -> stopSpeak());
         btnSupprimer.setOnAction(e -> { store.deleteAnnonce(a.getId()); stage.close(); });
         btnFermer.setOnAction(e -> stage.close());
         stage.showAndWait();
@@ -215,14 +284,41 @@ public class MainDashboardController implements Initializable {
         FormStage form = buildFormStage("Détail donation", "Consultez et gérez cette donation");
         Stage stage = form.stage();
         String annonce = dn.getAnnonceId() == null ? "Aucune" : store.findAnnonce(dn.getAnnonceId()).map(Annonce::getTitreAnnonce).orElse("Annonce supprimée");
-        Label title = new Label("Type de don : " + safe(dn.getTypeDon())); title.getStyleClass().add("dialog-title");
-        VBox box = new VBox(10, title, new Label("Quantité : " + dn.getQuantite()),
-                new Label("Date : " + dn.getDateDonation()), new Label("Statut : " + safe(dn.getStatut())), new Label("Annonce liée : " + annonce));
+        String rawType = safe(dn.getTypeDon());
+        String rawQty = String.valueOf(dn.getQuantite());
+        String rawDate = String.valueOf(dn.getDateDonation());
+        String rawStatut = safe(dn.getStatut());
+        String rawAnnonce = annonce;
+
+        Label title = new Label("Type de don : " + rawType); title.getStyleClass().add("dialog-title");
+        Label qtyLabel = new Label("Quantité : " + rawQty);
+        Label dateLabel = new Label("Date : " + rawDate);
+        Label statutLabel = new Label("Statut : " + rawStatut);
+        Label annonceLabel = new Label("Annonce liée : " + rawAnnonce);
+
+        ComboBox<String> langChoice = new ComboBox<>(FXCollections.observableArrayList("fr", "en", "ar"));
+        langChoice.setValue("fr");
+        Button btnTranslate = new Button("Traduire");
+        btnTranslate.getStyleClass().add("btn-ghost");
+        btnTranslate.setOnAction(e -> {
+            String lang = langChoice.getValue();
+            title.setText(tr("Type de don : " + rawType, lang));
+            qtyLabel.setText(tr("Quantité : " + rawQty, lang));
+            dateLabel.setText(tr("Date : " + rawDate, lang));
+            statutLabel.setText(tr("Statut : " + rawStatut, lang));
+            annonceLabel.setText(tr("Annonce liée : " + rawAnnonce, lang));
+        });
+        HBox translateBar = new HBox(10, new Label("Langue :"), langChoice, btnTranslate);
+        translateBar.setAlignment(Pos.CENTER_LEFT);
+
+        VBox box = new VBox(10, translateBar, title, qtyLabel, dateLabel, statutLabel, annonceLabel);
         box.setPadding(new Insets(12)); box.getStyleClass().add(backOfficeMode ? "back-detail-card" : "panel-card");
         Button btnSupprimer = new Button("Supprimer"); btnSupprimer.getStyleClass().add("btn-danger");
+        Button btnRead = new Button("Lire à voix haute"); btnRead.getStyleClass().add("btn-ghost");
+        Button btnStopRead = new Button("Arrêter la lecture"); btnStopRead.getStyleClass().add("btn-ghost");
         Button btnModifier = new Button("Modifier"); btnModifier.getStyleClass().add("btn-primary");
         Button btnFermer = new Button("Fermer"); btnFermer.getStyleClass().add("btn-ghost");
-        HBox actions = new HBox(10, btnSupprimer, btnModifier, btnFermer);
+        HBox actions = new HBox(10, btnSupprimer, btnRead, btnStopRead, btnModifier, btnFermer);
         actions.setPadding(new Insets(12));
         VBox content = new VBox(10, box, actions);
         form.body().getChildren().add(content);
@@ -231,6 +327,11 @@ public class MainDashboardController implements Initializable {
             stage.close();
             Platform.runLater(() -> openDonationEditor(dn, false));
         });
+        btnRead.setOnAction(e -> speakText(
+                "Donation. Type de don " + rawType + ". Quantite " + rawQty + ". Date " + rawDate
+                        + ". Statut " + rawStatut + ". Annonce liee " + rawAnnonce + "."
+        ));
+        btnStopRead.setOnAction(e -> stopSpeak());
         btnSupprimer.setOnAction(e -> { store.deleteDonation(dn.getId()); stage.close(); });
         btnFermer.setOnAction(e -> stage.close());
         stage.showAndWait();
@@ -250,35 +351,104 @@ public class MainDashboardController implements Initializable {
         setStringCombo(urg, base.getUrgence());
         ComboBox<String> etat = new ComboBox<>(FXCollections.observableArrayList("active", "clôturée"));
         setStringCombo(etat, base.getEtatAnnonce());
+        ComboBox<String> sourceLang = new ComboBox<>(FXCollections.observableArrayList("auto", "fr", "en", "ar"));
+        sourceLang.setValue("auto");
+        ComboBox<String> targetLang = new ComboBox<>(FXCollections.observableArrayList("fr", "en", "ar"));
+        targetLang.setValue("fr");
+        sourceLang.setPrefWidth(120);
+        targetLang.setPrefWidth(120);
+        Label translateInfo = new Label();
+        translateInfo.setStyle("-fx-text-fill:#0f766e; -fx-font-size: 12px;");
+        translateInfo.setWrapText(true);
         Label err = new Label(); err.setStyle("-fx-text-fill:#dc2626;"); err.setWrapText(true);
         Label lTitre = formLabel("Titre * :");
         Label lDesc = formLabel("Description * :");
         Label lDate = formLabel("Date * :");
         Label lUrg = formLabel("Urgence * :");
         Label lEtat = formLabel("État * :");
+        Label lTranslate = formLabel("Traduction :");
 
         VBox fields = new VBox(10);
         fields.setPadding(new Insets(12));
         fields.getStyleClass().add(backOfficeMode ? "back-form-card" : "pro-form-card");
+        Button translateBtn = new Button("Traduire");
+        translateBtn.getStyleClass().add("btn-ghost");
+        translateBtn.setOnAction(e -> {
+            try {
+                String translatedTitle = translationService.translate(titre.getText(), sourceLang.getValue(), targetLang.getValue());
+                String translatedDesc = translationService.translate(desc.getText(), sourceLang.getValue(), targetLang.getValue());
+                titre.setText(translatedTitle);
+                desc.setText(translatedDesc);
+                translateInfo.setText("Traduction appliquée vers '" + targetLang.getValue() + "'.");
+                err.setText("");
+            } catch (RuntimeException ex) {
+                translateInfo.setText("");
+                err.setText("Impossible de traduire pour le moment. Vérifiez votre connexion Internet.");
+            }
+        });
+        HBox translateControls = new HBox(8,
+                new Label("Source"), sourceLang,
+                new Label("Cible"), targetLang,
+                translateBtn);
+        translateControls.setAlignment(Pos.CENTER_LEFT);
+
         fields.getChildren().addAll(
                 formRow(lTitre, titre),
                 formRowTopAligned(lDesc, desc),
                 formRow(lDate, date),
                 formRow(lUrg, urg),
-                formRow(lEtat, etat));
+                formRow(lEtat, etat),
+                formRow(lTranslate, translateControls));
         Button saveBtn = new Button("Enregistrer"); saveBtn.getStyleClass().add(backOfficeMode ? "btn-secondary" : "btn-primary");
         Button cancelBtn = new Button("Annuler"); cancelBtn.getStyleClass().add("btn-ghost");
         HBox actions = new HBox(10, saveBtn, cancelBtn); actions.setStyle("-fx-padding: 12;");
-        VBox root = new VBox(10, fields, err, actions); root.getStyleClass().add(backOfficeMode ? "back-form-root" : "pro-form-root");
+        VBox root = new VBox(10, fields, translateInfo, err, actions); root.getStyleClass().add(backOfficeMode ? "back-form-root" : "pro-form-root");
         root.setMinHeight(Region.USE_PREF_SIZE);
         form.body().getChildren().add(root);
 
         saveBtn.setOnAction(ev -> {
             Annonce a = new Annonce(); a.setId(base.getId()); a.setTitreAnnonce(titre.getText()); a.setDescription(desc.getText()); a.setDatePublication(date.getValue()); a.setUrgence(urg.getValue()); a.setEtatAnnonce(etat.getValue());
+
             List<String> es = ValidationService.validateAnnonce(a);
             if (!es.isEmpty()) { err.setText(String.join("\n", es)); return; }
-            if (isCreate || a.getId() == null) store.createAnnonce(a); else store.updateAnnonce(a);
+
+            FraudDetectionService.FraudReport fraud = fraudDetectionService.analyze(a, store.annoncesProperty());
+            boolean adminReviewRequired = false;
+            if (fraud.suspicious()) {
+                boolean proceed = showFraudReviewDialog(fraud);
+                if (!proceed) {
+                    err.setText("Enregistrement annulé après alerte anti-fraude.");
+                    return;
+                }
+                if (fraud.riskScore() > 0.69d) {
+                    adminReviewRequired = true;
+                }
+            }
+            suppressSelectionDialogs = true;
+            if (isCreate || a.getId() == null) {
+                store.createAnnonce(a);
+            } else {
+                store.updateAnnonce(a);
+            }
+
+            boolean shouldShowAdminPopupNow = false;
+            if (adminReviewRequired) {
+                Annonce persisted = (isCreate || a.getId() == null)
+                        ? store.findLastAnnonceByContent(a).orElse(a)
+                        : a;
+                store.createFraudNotification(persisted, fraud.riskScore(), fraud.reasons());
+                refreshSpamNotificationBadge();
+                shouldShowAdminPopupNow = false;
+            }
             stage.close();
+            boolean finalShouldShowAdminPopupNow = shouldShowAdminPopupNow;
+            Platform.runLater(() -> {
+                clearSelection();
+                suppressSelectionDialogs = false;
+                if (finalShouldShowAdminPopupNow) {
+                    showPendingFraudNotificationsForAdmin();
+                }
+            });
         });
         cancelBtn.setOnAction(e -> stage.close());
         stage.showAndWait();
@@ -294,8 +464,11 @@ public class MainDashboardController implements Initializable {
         DatePicker date = new DatePicker(base.getDateDonation() == null ? LocalDate.now() : base.getDateDonation());
         ComboBox<String> st = new ComboBox<>(FXCollections.observableArrayList("en attente", "accepté", "refusé"));
         setStringCombo(st, base.getStatut() == null ? "en attente" : base.getStatut());
-        ComboBox<Annonce> ann = new ComboBox<>(store.annoncesProperty());
+        ComboBox<Annonce> ann = new ComboBox<>(FXCollections.observableArrayList(store.annoncesProperty()));
         bindAnnonceComboToId(ann, base.getAnnonceId());
+        Label suggestion = new Label();
+        suggestion.setStyle("-fx-text-fill: #0369a1; -fx-font-size: 12px;");
+        suggestion.setWrapText(true);
         Label err = new Label(); err.setStyle("-fx-text-fill:#dc2626;"); err.setWrapText(true);
         Label lType = formLabel("Type de don * :");
         Label lQte = formLabel("Quantité * :");
@@ -314,27 +487,44 @@ public class MainDashboardController implements Initializable {
                 formRow(lAnnonce, ann));
         Button saveBtn = new Button("Enregistrer"); saveBtn.getStyleClass().add(backOfficeMode ? "btn-secondary" : "btn-primary");
         Button cancelBtn = new Button("Annuler"); cancelBtn.getStyleClass().add("btn-ghost");
+        Button suggestBtn = new Button("Suggérer annonce IA");
+        suggestBtn.getStyleClass().add("btn-ghost");
+        suggestBtn.setOnAction(e -> applyDonationSuggestion(type.getText(), ann, suggestion, true));
         HBox actions = new HBox(10, saveBtn, cancelBtn); actions.setStyle("-fx-padding: 12;");
-        VBox root = new VBox(10, fields, err, actions); root.getStyleClass().add(backOfficeMode ? "back-form-root" : "pro-form-root");
+        HBox aiActions = new HBox(10, suggestBtn);
+        aiActions.setPadding(new Insets(0, 12, 0, 12));
+        VBox root = new VBox(10, fields, suggestion, err, aiActions, actions); root.getStyleClass().add(backOfficeMode ? "back-form-root" : "pro-form-root");
         root.setMinHeight(Region.USE_PREF_SIZE);
         form.body().getChildren().add(root);
+
+        type.textProperty().addListener((obs, oldV, newV) -> applyDonationSuggestion(newV, ann, suggestion, false));
+        applyDonationSuggestion(type.getText(), ann, suggestion, false);
 
         saveBtn.setOnAction(ev -> {
             Donation dn = new Donation(); dn.setId(base.getId()); dn.setTypeDon(type.getText()); dn.setQuantite(parseInt(q.getText())); dn.setDateDonation(date.getValue()); dn.setStatut(st.getValue()); dn.setAnnonceId(ann.getValue()==null?base.getAnnonceId():ann.getValue().getId());
             List<String> es = ValidationService.validateDonation(dn);
             if (dn.getQuantite()==null && q.getText()!=null && !q.getText().isBlank()) { es = new java.util.ArrayList<>(es); es.add(0,"La quantité doit être un nombre entier valide."); }
             if (!es.isEmpty()) { err.setText(String.join("\n", es)); return; }
+            suppressSelectionDialogs = true;
             if (isCreate || dn.getId()==null) store.createDonation(dn); else store.updateDonation(dn);
             stage.close();
+            Platform.runLater(() -> {
+                clearSelection();
+                suppressSelectionDialogs = false;
+            });
         });
         cancelBtn.setOnAction(e -> stage.close());
         stage.showAndWait();
     }
 
     private void refreshStats() {
-        lblTotalAnnonces.setText(String.valueOf(store.annoncesProperty().size()));
-        lblPendingDons.setText(String.valueOf(store.donationsProperty().stream().filter(d -> "en attente".equals(d.getStatut())).count()));
-        lblAcceptedDons.setText(String.valueOf(store.donationsProperty().stream().filter(d -> "accepté".equals(d.getStatut())).count()));
+        int totalAnnonces = store.annoncesProperty().size();
+        long pendingDons = store.donationsProperty().stream().filter(d -> "en attente".equals(d.getStatut())).count();
+        long acceptedDons = store.donationsProperty().stream().filter(d -> "accepté".equals(d.getStatut())).count();
+        lblTotalAnnonces.setText(String.valueOf(totalAnnonces));
+        lblPendingDons.setText(String.valueOf(pendingDons));
+        lblAcceptedDons.setText(String.valueOf(acceptedDons));
+        refreshBackOfficeInsights();
     }
 
     private void activate(Button active) {
@@ -388,10 +578,17 @@ public class MainDashboardController implements Initializable {
             btnNav6.setText("◔  Forum");
             btnAddAnnonceTop.setText("Ajouter une annonce");
             btnAddDonationTop.setText("Ajouter un don");
+            btnSpamNotifications.setVisible(true);
+            btnSpamNotifications.setManaged(true);
+            lblSpamNotifCount.setVisible(true);
+            lblSpamNotifCount.setManaged(true);
+            backOfficeInsightsRow.setVisible(true);
+            backOfficeInsightsRow.setManaged(true);
             btnFrontMode.getStyleClass().setAll("btn-ghost");
             btnBackMode.getStyleClass().setAll("btn-secondary");
             listAnnonces.refresh();
             listDonations.refresh();
+            refreshBackOfficeInsights();
             return;
         }
 
@@ -413,6 +610,12 @@ public class MainDashboardController implements Initializable {
         lblDonationsSectionTitle.setText("Mes propositions de dons");
         btnAddAnnonceTop.setText("Ajouter une annonce");
         btnAddDonationTop.setText("Ajouter un don");
+        btnSpamNotifications.setVisible(false);
+        btnSpamNotifications.setManaged(false);
+        lblSpamNotifCount.setVisible(false);
+        lblSpamNotifCount.setManaged(false);
+        backOfficeInsightsRow.setVisible(false);
+        backOfficeInsightsRow.setManaged(false);
         btnFrontMode.getStyleClass().setAll("btn-secondary");
         btnBackMode.getStyleClass().setAll("btn-ghost");
         listAnnonces.refresh();
@@ -485,6 +688,351 @@ public class MainDashboardController implements Initializable {
 
     private Integer parseInt(String s) { try { return s == null || s.isBlank() ? null : Integer.parseInt(s.trim()); } catch (Exception e) { return null; } }
 
+    private String tr(String text, String targetLang) {
+        try {
+            return translationService.translate(text, "auto", targetLang);
+        } catch (RuntimeException ex) {
+            return text;
+        }
+    }
+
+    private boolean showFraudReviewDialog(FraudDetectionService.FraudReport fraud) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Vérification anti-fraude");
+        dialog.initOwner(listAnnonces.getScene().getWindow());
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
+
+        Label title = new Label("Annonce potentiellement suspecte");
+        title.getStyleClass().add("dialog-title");
+        int pct = (int) Math.round(fraud.riskScore() * 100d);
+        Label score = new Label("Risque " + pct + "%");
+        score.setStyle(pct >= 70
+                ? "-fx-background-color:#fee2e2; -fx-text-fill:#991b1b; -fx-font-weight:700; -fx-padding:4 10; -fx-background-radius:999;"
+                : "-fx-background-color:#fef3c7; -fx-text-fill:#92400e; -fx-font-weight:700; -fx-padding:4 10; -fx-background-radius:999;");
+
+        VBox reasonsBox = new VBox(6);
+        if (fraud.reasons() == null || fraud.reasons().isEmpty()) {
+            reasonsBox.getChildren().add(new Label("- Anomalie détectée"));
+        } else {
+            for (String reason : fraud.reasons()) {
+                reasonsBox.getChildren().add(new Label("- " + reason));
+            }
+        }
+        Label confirm = new Label("Continuer l'enregistrement ?");
+        confirm.setStyle("-fx-font-weight: 700;");
+        VBox content = new VBox(10,
+                new HBox(10, title, score),
+                new Label("Signaux détectés :"),
+                reasonsBox,
+                confirm);
+        content.setPadding(new Insets(12));
+        content.setStyle("-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-background-radius: 12;");
+
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().setPrefWidth(560);
+        Button okBtn = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        Button cancelBtn = (Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL);
+        okBtn.getStyleClass().add("btn-primary");
+        cancelBtn.getStyleClass().add("btn-ghost");
+
+        return dialog.showAndWait().filter(bt -> bt == ButtonType.OK).isPresent();
+    }
+
+    private void showPendingFraudNotificationsForAdmin() {
+        List<FraudNotification> pending = new ArrayList<>(store.findPendingFraudNotifications());
+        if (pending.isEmpty()) {
+            return;
+        }
+
+        for (FraudNotification notification : pending) {
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Alerte modération anti-spam");
+            dialog.initOwner(listAnnonces.getScene().getWindow());
+            dialog.initModality(Modality.APPLICATION_MODAL);
+
+            ButtonType keepType = new ButtonType("Garder l'annonce");
+            ButtonType deleteType = new ButtonType("Supprimer l'annonce", ButtonBar.ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().addAll(keepType, deleteType);
+
+            int pct = (int) Math.round(notification.getRiskScore() * 100d);
+            String titre = notification.getTitreAnnonce() == null || notification.getTitreAnnonce().isBlank()
+                    ? "Annonce sans titre"
+                    : notification.getTitreAnnonce();
+            String reasons = notification.getReasons() == null || notification.getReasons().isBlank()
+                    ? "- Aucun détail disponible"
+                    : "- " + notification.getReasons().replace(" | ", "\n- ");
+
+            Label title = new Label("Risque spam donation détecté");
+            title.getStyleClass().add("dialog-title");
+            Label risk = new Label("Risque " + pct + "%");
+            risk.setStyle("-fx-background-color:#fee2e2; -fx-text-fill:#991b1b; -fx-font-weight:700; -fx-padding:4 10; -fx-background-radius:999;");
+
+            Label body = new Label(
+                    "Une annonce à haut risque a été publiée malgré l'alerte utilisateur.\n\n"
+                            + "Titre: " + titre + "\n"
+                            + "ID annonce: " + (notification.getAnnonceId() == null ? "inconnu" : notification.getAnnonceId()) + "\n\n"
+                            + "Signaux:\n" + reasons + "\n\n"
+                            + "Décision administrateur:"
+            );
+            body.setWrapText(true);
+
+            VBox content = new VBox(10, new HBox(10, title, risk), body);
+            content.setPadding(new Insets(12));
+            content.setStyle("-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-background-radius: 12;");
+            dialog.getDialogPane().setContent(content);
+            dialog.getDialogPane().setPrefWidth(620);
+
+            Button keepBtn = (Button) dialog.getDialogPane().lookupButton(keepType);
+            Button deleteBtn = (Button) dialog.getDialogPane().lookupButton(deleteType);
+            keepBtn.getStyleClass().add("btn-ghost");
+            deleteBtn.getStyleClass().add("btn-danger");
+
+            ButtonType decision = dialog.showAndWait().orElse(keepType);
+            if (decision == deleteType && notification.getAnnonceId() != null) {
+                store.deleteAnnonce(notification.getAnnonceId());
+                store.resolveFraudNotification(notification.getId(), "deleted_by_admin");
+            } else if (decision == deleteType) {
+                store.resolveFraudNotification(notification.getId(), "delete_requested_but_missing_annonce_id");
+            } else {
+                store.resolveFraudNotification(notification.getId(), "kept_by_admin");
+            }
+        }
+    }
+
+    @FXML
+    private void openSpamNotifications() {
+        if (!backOfficeMode) {
+            return;
+        }
+
+        List<FraudNotification> pending = new ArrayList<>(store.findPendingFraudNotifications());
+        refreshSpamNotificationBadge();
+        if (pending.isEmpty()) {
+            Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setTitle("Notifications anti-spam");
+            info.setHeaderText("Aucune alerte en attente");
+            info.setContentText("Il n'y a actuellement aucune annonce à risque > 69% en attente de revue.");
+            info.showAndWait();
+            return;
+        }
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Notifications anti-spam");
+        dialog.initOwner(listAnnonces.getScene().getWindow());
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+
+        ListView<FraudNotification> notifList = new ListView<>();
+        notifList.setItems(FXCollections.observableArrayList(pending));
+        notifList.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(FraudNotification item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                    setText(null);
+                    return;
+                }
+                int pct = (int) Math.round(item.getRiskScore() * 100d);
+                Label title = new Label((item.getTitreAnnonce() == null || item.getTitreAnnonce().isBlank())
+                        ? "Annonce sans titre"
+                        : item.getTitreAnnonce());
+                title.setStyle("-fx-font-weight: 700; -fx-font-size: 13px;");
+                Label sub = new Label("Risque " + pct + "%  •  cliquez pour modérer");
+                sub.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11px;");
+                VBox box = new VBox(3, title, sub);
+                box.setPadding(new Insets(6));
+                setGraphic(box);
+            }
+        });
+
+        notifList.setOnMouseClicked(e -> {
+            if (e.getClickCount() < 2) {
+                return;
+            }
+            FraudNotification selected = notifList.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                return;
+            }
+            boolean resolved = openFraudNotificationReview(selected);
+            if (resolved) {
+                notifList.getItems().remove(selected);
+                refreshSpamNotificationBadge();
+                if (notifList.getItems().isEmpty()) {
+                    dialog.close();
+                }
+            }
+        });
+
+        Label hint = new Label("Double-cliquez une notification pour voir l'annonce et décider garder/supprimer.");
+        hint.setStyle("-fx-text-fill: #64748b;");
+        VBox content = new VBox(10, hint, notifList);
+        content.setPadding(new Insets(12));
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().setPrefWidth(620);
+        dialog.getDialogPane().setPrefHeight(460);
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.CLOSE)).getStyleClass().add("btn-ghost");
+        dialog.showAndWait();
+    }
+
+    private boolean openFraudNotificationReview(FraudNotification notification) {
+        if (notification == null) {
+            return false;
+        }
+        Annonce annonce = notification.getAnnonceId() == null
+                ? null
+                : store.findAnnonce(notification.getAnnonceId()).orElse(null);
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Revue annonce signalée");
+        dialog.initOwner(listAnnonces.getScene().getWindow());
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        ButtonType keepType = new ButtonType("Garder");
+        ButtonType deleteType = new ButtonType("Supprimer", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(keepType, deleteType, ButtonType.CANCEL);
+        dialog.getDialogPane().getStyleClass().add("pro-dialog");
+        dialog.getDialogPane().setPrefWidth(760);
+
+        int pct = (int) Math.round(notification.getRiskScore() * 100d);
+        Label risk = new Label("Risque " + pct + "%");
+        risk.setStyle("-fx-background-color:#fee2e2; -fx-text-fill:#991b1b; -fx-font-weight:700; -fx-padding:5 12; -fx-background-radius:999;");
+        Label title = new Label("Annonce signalée");
+        title.getStyleClass().add("dialog-title");
+        Label subtitle = new Label("Modérez cette annonce signalée par l'anti-spam.");
+        subtitle.getStyleClass().add("muted-label");
+
+        String details = annonce == null
+                ? "Annonce introuvable (peut-être déjà supprimée)\n"
+                : "Titre: " + safe(annonce.getTitreAnnonce()) + "\n"
+                + "Description: " + safe(annonce.getDescription()) + "\n"
+                + "Date: " + annonce.getDatePublication() + "\n"
+                + "Urgence: " + safe(annonce.getUrgence()) + "\n"
+                + "État: " + safe(annonce.getEtatAnnonce()) + "\n";
+
+        String reasons = notification.getReasons() == null || notification.getReasons().isBlank()
+                ? "- Aucun signal détaillé"
+                : "- " + notification.getReasons().replace(" | ", "\n- ");
+        Label annonceSection = new Label("Détails de l'annonce");
+        annonceSection.setStyle("-fx-font-weight: 700; -fx-text-fill: #0f172a;");
+        Label detailsLabel = new Label(details);
+        detailsLabel.setWrapText(true);
+        VBox annonceCard = new VBox(8, annonceSection, detailsLabel);
+        annonceCard.setPadding(new Insets(12));
+        annonceCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-background-radius: 12;");
+
+        Label reasonsSection = new Label("Signaux anti-spam");
+        reasonsSection.setStyle("-fx-font-weight: 700; -fx-text-fill: #0f172a;");
+        Label reasonsLabel = new Label(reasons);
+        reasonsLabel.setWrapText(true);
+        VBox reasonsCard = new VBox(8, reasonsSection, reasonsLabel);
+        reasonsCard.setPadding(new Insets(12));
+        reasonsCard.setStyle("-fx-background-color: #fff7ed; -fx-border-color: #fed7aa; -fx-border-radius: 12; -fx-background-radius: 12;");
+
+        Label decisionHint = new Label("Décision admin");
+        decisionHint.setStyle("-fx-font-weight: 700; -fx-text-fill: #334155;");
+
+        VBox content = new VBox(12,
+                new VBox(4, new HBox(10, title, risk), subtitle),
+                annonceCard,
+                reasonsCard,
+                decisionHint);
+        content.setPadding(new Insets(14));
+        content.setStyle("-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 14; -fx-background-radius: 14;");
+        dialog.getDialogPane().setContent(content);
+
+        ((Button) dialog.getDialogPane().lookupButton(keepType)).getStyleClass().add("btn-ghost");
+        ((Button) dialog.getDialogPane().lookupButton(deleteType)).getStyleClass().add("btn-danger");
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).getStyleClass().add("btn-secondary");
+
+        ButtonType decision = dialog.showAndWait().orElse(ButtonType.CANCEL);
+        if (decision == keepType) {
+            store.resolveFraudNotification(notification.getId(), "kept_by_admin");
+            return true;
+        }
+        if (decision == deleteType) {
+            if (notification.getAnnonceId() != null) {
+                store.deleteAnnonce(notification.getAnnonceId());
+                store.resolveFraudNotification(notification.getId(), "deleted_by_admin");
+            } else {
+                store.resolveFraudNotification(notification.getId(), "delete_requested_but_missing_annonce_id");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void refreshSpamNotificationBadge() {
+        int pending = store.findPendingFraudNotifications().size();
+        lblSpamNotifCount.setText(String.valueOf(pending));
+        lblSpamNotifCount.setVisible(backOfficeMode);
+        lblSpamNotifCount.setManaged(backOfficeMode);
+        if (pending == 0) {
+            lblSpamNotifCount.setStyle("-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-size: 11px; -fx-font-weight: 800; -fx-background-radius: 999; -fx-padding: 3 8 3 8; -fx-alignment: center;");
+        } else {
+            lblSpamNotifCount.setStyle("-fx-background-color: #dc2626; -fx-text-fill: white; -fx-font-size: 11px; -fx-font-weight: 800; -fx-background-radius: 999; -fx-padding: 3 8 3 8; -fx-alignment: center;");
+        }
+    }
+
+    private void refreshBackOfficeInsights() {
+        if (lblInsight1Value == null) {
+            return;
+        }
+
+        int totalAnnonces = store.annoncesProperty().size();
+        long activeAnnonces = store.annoncesProperty().stream().filter(a -> "active".equals(a.getEtatAnnonce())).count();
+        long closedAnnonces = store.annoncesProperty().stream().filter(a -> "clôturée".equals(a.getEtatAnnonce())).count();
+        long highUrgence = store.annoncesProperty().stream().filter(a -> "élevée".equals(a.getUrgence())).count();
+
+        long linkedDonations = store.donationsProperty().stream().filter(d -> d.getAnnonceId() != null).count();
+        long pendingDons = store.donationsProperty().stream().filter(d -> "en attente".equals(d.getStatut())).count();
+        long acceptedDons = store.donationsProperty().stream().filter(d -> "accepté".equals(d.getStatut())).count();
+        long refusedDons = store.donationsProperty().stream().filter(d -> "refusé".equals(d.getStatut())).count();
+
+        long annoncesWithDonation = store.annoncesProperty().stream()
+                .filter(a -> a.getId() != null)
+                .filter(a -> store.donationsProperty().stream().anyMatch(d -> a.getId().equals(d.getAnnonceId())))
+                .count();
+        int coveragePct = totalAnnonces == 0 ? 0 : (int) Math.round((annoncesWithDonation * 100.0d) / totalAnnonces);
+
+        long totalDons = store.donationsProperty().size();
+        int acceptedRate = totalDons == 0 ? 0 : (int) Math.round((acceptedDons * 100.0d) / totalDons);
+
+        int spamPending = store.findPendingFraudNotifications().size();
+
+        lblInsight1Title.setText("Activité annonces");
+        lblInsight1Value.setText(activeAnnonces + " / " + totalAnnonces);
+        lblInsight1Sub.setText("Clôturées: " + closedAnnonces + "  •  Urgence élevée: " + highUrgence);
+
+        lblInsight2Title.setText("Couverture des besoins");
+        lblInsight2Value.setText(coveragePct + "%");
+        lblInsight2Sub.setText("Annonces avec don: " + annoncesWithDonation + "/" + totalAnnonces);
+
+        lblInsight3Title.setText("Pipeline des dons");
+        lblInsight3Value.setText(acceptedRate + "% acceptés");
+        lblInsight3Sub.setText("En attente: " + pendingDons + "  •  Refusés: " + refusedDons + "  •  Liés: " + linkedDonations);
+
+        lblInsight4Title.setText("Conformité anti-spam");
+        lblInsight4Value.setText(spamPending + " alertes");
+        lblInsight4Sub.setText("Notifications en attente de revue admin");
+    }
+
+    private void speakText(String text) {
+        if (!textToSpeechService.isSupported()) {
+            Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setTitle("Lecture vocale");
+            info.setHeaderText("Lecture vocale indisponible");
+            info.setContentText("Cette fonctionnalité est disponible sur Windows.");
+            info.showAndWait();
+            return;
+        }
+        textToSpeechService.speakAsync(text);
+    }
+
+    private void stopSpeak() {
+        textToSpeechService.stop();
+    }
+
     private static String txt(String s) {
         return s == null ? "" : s;
     }
@@ -519,6 +1067,34 @@ public class MainDashboardController implements Initializable {
                         .filter(x -> Objects.equals(x.getId(), found.getId()))
                         .findFirst()
                         .ifPresent(ann::setValue));
+    }
+
+    private void applyDonationSuggestion(String donationText, ComboBox<Annonce> ann, Label suggestion, boolean forceSelect) {
+        List<MatchingService.MatchResult> ranked = matchingService.rankAnnoncesForDonationText(
+                donationText,
+                store.annoncesProperty(),
+                5
+        );
+        if (ranked.isEmpty()) {
+            ann.setItems(FXCollections.observableArrayList(store.annoncesProperty()));
+            if (forceSelect) {
+                ann.getSelectionModel().clearSelection();
+            }
+            suggestion.setText("IA: aucune correspondance pertinente pour le moment.");
+            return;
+        }
+
+        List<Annonce> ordered = ranked.stream().map(MatchingService.MatchResult::annonce).toList();
+        ann.setItems(FXCollections.observableArrayList(ordered));
+        MatchingService.MatchResult top = ranked.get(0);
+        if (forceSelect || ann.getValue() == null) {
+            ann.setValue(top.annonce());
+        }
+        suggestion.setText(String.format(
+                "IA: meilleure correspondance '%s' (score %.0f%%).",
+                safe(top.annonce().getTitreAnnonce()),
+                top.score() * 100d
+        ));
     }
 
     private String safe(String s) { return s == null || s.isBlank() ? "—" : s; }
