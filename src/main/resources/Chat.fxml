@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Controllers.ChatController"
+      spacing="10" style="-fx-background-color: #f5f7fa; -fx-padding: 15;">
+
+    <!-- HEADER -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);">
+
+        <!-- Avatar médecin -->
+        <Label fx:id="lblAvatarMedecin"
+               text="Dr"
+               style="-fx-background-color: #1a73e8; -fx-background-radius: 25; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16; -fx-alignment: center; -fx-min-width: 50; -fx-min-height: 50; -fx-max-width: 50; -fx-max-height: 50;"/>
+
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblNomMedecin"
+                   text="Dr. Sarah Amrani"
+                   style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+            <Label fx:id="lblStatutMedecin"
+                   text="En ligne"
+                   style="-fx-font-size: 12; -fx-text-fill: #16a34a;"/>
+        </VBox>
+    </HBox>
+
+    <!-- ZONE MESSAGES -->
+    <ScrollPane fx:id="chatScrollPane"
+                fitToWidth="true"
+                VBox.vgrow="ALWAYS"
+                style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+        <VBox fx:id="chatMessagesContainer"
+              spacing="10"
+              style="-fx-padding: 10; -fx-background-color: transparent;">
+        </VBox>
+    </ScrollPane>
+
+    <!-- ZONE SAISIE -->
+    <HBox spacing="10" alignment="CENTER_LEFT"
+          style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);">
+
+        <TextField fx:id="messageInput"
+                   promptText="Tapez votre message..."
+                   HBox.hgrow="ALWAYS"
+                   style="-fx-font-size: 14; -fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: #e2e8f0; -fx-padding: 10 15; -fx-background-color: #f8fafc;"/>
+
+        <Button fx:id="btnEnvoyer"
+                text="📤"
+                style="-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-font-size: 18; -fx-background-radius: 25; -fx-min-width: 50; -fx-min-height: 50; -fx-cursor: hand;"/>
+    </HBox>
+
+</VBox>

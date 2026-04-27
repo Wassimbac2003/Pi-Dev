@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Controllers.AdminChatController"
+      spacing="0" style="-fx-background-color: #f0f4f8;">
+
+    <!-- ══════ HEADER ══════ -->
+    <HBox alignment="CENTER_LEFT" spacing="14"
+          style="-fx-background-color: linear-gradient(to right, #1a73e8, #4a6cf7);
+                 -fx-padding: 16 20;
+                 -fx-effect: dropshadow(gaussian, rgba(26,115,232,0.35), 12, 0, 0, 4);">
+
+        <Label fx:id="lblAvatarPatient" text="PT"
+               style="-fx-background-color: rgba(255,255,255,0.25);
+                      -fx-background-radius: 22;
+                      -fx-text-fill: white;
+                      -fx-font-weight: bold;
+                      -fx-font-size: 15;
+                      -fx-alignment: center;
+                      -fx-min-width: 44; -fx-min-height: 44;
+                      -fx-max-width: 44; -fx-max-height: 44;"/>
+
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblNomPatient" text="Sarah Martin"
+                   style="-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <HBox spacing="5" alignment="CENTER_LEFT">
+                <Label text="●" style="-fx-font-size: 8; -fx-text-fill: #4ade80;"/>
+                <Label fx:id="lblStatutPatient" text="En ligne"
+                       style="-fx-font-size: 11; -fx-text-fill: rgba(255,255,255,0.75);"/>
+            </HBox>
+        </VBox>
+
+        <Label text="💬" style="-fx-font-size: 18; -fx-text-fill: rgba(255,255,255,0.6);"/>
+    </HBox>
+
+    <!-- ══════ ZONE MESSAGES ══════ -->
+    <ScrollPane fx:id="scrollPane" fitToWidth="true" VBox.vgrow="ALWAYS"
+                style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+        <VBox fx:id="messagesContainer" spacing="12"
+              style="-fx-padding: 20 16; -fx-background-color: transparent;"/>
+    </ScrollPane>
+
+    <!-- ══════ ZONE SAISIE ══════ -->
+    <HBox spacing="10" alignment="CENTER"
+          style="-fx-background-color: white;
+                 -fx-padding: 14 16;
+                 -fx-border-color: #e8edf3;
+                 -fx-border-width: 1 0 0 0;
+                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, -2);">
+
+        <TextField fx:id="messageInput"
+                   promptText="Écrire un message..."
+                   HBox.hgrow="ALWAYS"
+                   style="-fx-font-size: 13;
+                          -fx-background-radius: 22;
+                          -fx-border-radius: 22;
+                          -fx-border-color: #e2e8f0;
+                          -fx-padding: 11 18;
+                          -fx-background-color: #f8fafc;
+                          -fx-text-fill: #1e293b;"/>
+
+        <Button fx:id="btnEnvoyer" text="➤"
+                style="-fx-background-color: linear-gradient(to bottom right, #1a73e8, #4a6cf7);
+                       -fx-text-fill: white;
+                       -fx-font-size: 16;
+                       -fx-font-weight: bold;
+                       -fx-background-radius: 22;
+                       -fx-min-width: 46; -fx-min-height: 46;
+                       -fx-cursor: hand;
+                       -fx-effect: dropshadow(gaussian, rgba(26,115,232,0.4), 8, 0, 0, 3);"/>
+    </HBox>
+
+</VBox>

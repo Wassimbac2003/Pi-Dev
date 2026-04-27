@@ -2,23 +2,25 @@ package org.example;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import java.io.IOException;
 
 public class MainFx extends Application {
 
     @Override
-    public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/MainLayout.fxml"));
-        Scene scene = new Scene(root, 1400, 860);
-        scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
-        stage.setTitle("VitalTech - Health Track");
+    public void start(Stage stage) throws IOException {
+        // ✅ PAS DE SERVEUR ICI - Patient est JUSTE un client
+
+        FXMLLoader fxmlLoader = new FXMLLoader(MainFx.class.getResource("/MainLayout.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+        stage.setTitle("VitaTech Medical Center - Patient");
         stage.setScene(scene);
+        stage.setMaximized(true);
         stage.show();
     }
 
     public static void main(String[] args) {
-        launch(args);
+        launch();
     }
 }

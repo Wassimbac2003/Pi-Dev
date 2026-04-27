@@ -94,12 +94,13 @@ public class MainLayoutController {
             System.err.println("Erreur notif : " + e.getMessage());
         }
     }
-    // ===== Rappel =====
 
+    // ===== BANNIÈRE RAPPEL =====
     private void rafraichirRappel() {
         try {
             RappelResult result = rappelService.getRappels();
 
+            // Supprimer l'ancienne bannière
             if (rappelBanner != null && centerVBox != null) {
                 centerVBox.getChildren().remove(rappelBanner);
                 rappelBanner = null;
@@ -109,26 +110,49 @@ public class MainLayoutController {
 
             Rappel top = result.rappels.get(0);
 
-            String bannerClass, iconText;
+            // Couleurs selon le niveau
+            String bgColor, iconText;
             switch (top.niveau) {
-                case "urgent": bannerClass = "rappel-banner-urgent"; iconText = "!!"; break;
-                case "today":  bannerClass = "rappel-banner-today";  iconText = "!";  break;
-                default:       bannerClass = "rappel-banner-tomorrow"; iconText = "i"; break;
+                case "urgent":
+                    bgColor = "linear-gradient(to right, #dc2626, #b91c1c)";
+                    iconText = "!!";
+                    break;
+                case "today":
+                    bgColor = "linear-gradient(to right, #f97316, #ea580c)";
+                    iconText = "!";
+                    break;
+                default:
+                    bgColor = "linear-gradient(to right, #3b82f6, #2563eb)";
+                    iconText = "i";
+                    break;
             }
 
-            rappelBanner = new HBox(14);
+            rappelBanner = new HBox(12);
             rappelBanner.setAlignment(Pos.CENTER_LEFT);
-            rappelBanner.getStyleClass().addAll("rappel-banner", bannerClass);
+            rappelBanner.setPadding(new Insets(12, 25, 12, 25));
+            rappelBanner.setMinHeight(50);
+            rappelBanner.setMaxHeight(50);
+            rappelBanner.setStyle("-fx-background-color: " + bgColor + ";");
 
+            // Icône
             Label icon = new Label(iconText);
-            icon.getStyleClass().add("rappel-icon");
+            icon.setPrefWidth(30);
+            icon.setPrefHeight(30);
+            icon.setAlignment(Pos.CENTER);
+            icon.setStyle("-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 8; " +
+                    "-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13;");
 
+            // Message
             Label message = new Label(top.message);
-            message.getStyleClass().add("rappel-message");
+            message.setStyle("-fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold;");
             HBox.setHgrow(message, Priority.ALWAYS);
 
+            // Bouton fermer
             Button btnFermer = new Button("Fermer");
-            btnFermer.getStyleClass().add("rappel-close");
+            btnFermer.setStyle("-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; " +
+                    "-fx-font-size: 11; -fx-font-weight: bold; -fx-background-radius: 8; " +
+                    "-fx-border-color: rgba(255,255,255,0.4); -fx-border-radius: 8; " +
+                    "-fx-padding: 5 15; -fx-cursor: hand;");
             btnFermer.setCursor(Cursor.HAND);
             btnFermer.setOnAction(e -> {
                 centerVBox.getChildren().remove(rappelBanner);
@@ -137,6 +161,7 @@ public class MainLayoutController {
 
             rappelBanner.getChildren().addAll(icon, message, btnFermer);
 
+            // Insérer après le header (index 1)
             if (!centerVBox.getChildren().contains(rappelBanner)) {
                 centerVBox.getChildren().add(1, rappelBanner);
             }

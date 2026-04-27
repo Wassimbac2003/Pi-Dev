@@ -4,15 +4,21 @@ import Models.rdv;
 import Models.medecin;
 import Services.RdvService;
 import Services.MedecinService;
+import Services.SocketClient;
+import Services.SocketServer;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -23,13 +29,14 @@ import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import javafx.fxml.FXMLLoader;
-import java.io.IOException;
-import javafx.scene.layout.StackPane;
+
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 import javafx.animation.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public class AfficherRdvController {
@@ -60,8 +67,17 @@ public class AfficherRdvController {
     private VBox searchDropdown;
     private javafx.stage.Popup searchPopup;
 
+    // ── Socket : ID du patient connecté (adapter selon ta session) ──
+    private static final int PATIENT_ID_COURANT = 1;
+
     @FXML
     public void initialize() {
+        // Démarrer le serveur socket au premier chargement
+        SocketServer serveur = SocketServer.getInstance();
+        if (!serveur.isRunning()) {
+            serveur.demarrer();
+        }
+
         chargerDonnees();
         btnAjouter.setOnAction(e -> ouvrirPopupAjouter());
         btnHistorique.setOnAction(e -> ouvrirHistorique());
@@ -248,8 +264,8 @@ public class AfficherRdvController {
         String styleActif   = "-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #1a73e8; -fx-border-color: #1a73e8; -fx-border-width: 0 0 2 0; -fx-padding: 0 5 8 5; -fx-cursor: hand;";
         String styleInactif = "-fx-font-size: 14; -fx-text-fill: #999; -fx-padding: 0 5 8 5; -fx-cursor: hand;";
 
-        tabAVenir.setStyle(onglet.equals("avenir")  ? styleActif : styleInactif);
-        tabPasses.setStyle(onglet.equals("passes")  ? styleActif : styleInactif);
+        tabAVenir.setStyle(onglet.equals("avenir")   ? styleActif : styleInactif);
+        tabPasses.setStyle(onglet.equals("passes")   ? styleActif : styleInactif);
         tabAnnules.setStyle(onglet.equals("annules") ? styleActif : styleInactif);
 
         afficherCartes(searchField.getText());
@@ -485,7 +501,7 @@ public class AfficherRdvController {
         }
 
         // ===== BOUTON FEEDBACK ORANGE =====
-        if (statut.equals("termine") && r.getFeedbackNote() == null) {
+        if ((statut.equals("termine") || statut.equals("passe")) && r.getFeedbackNote() == null) {
             Button btnFeedback = new Button("⭐ Donner mon avis");
             btnFeedback.setStyle(
                     "-fx-background-color: linear-gradient(to right, #f97316, #fb923c);" +
@@ -884,7 +900,6 @@ public class AfficherRdvController {
 
         searchDropdown.getChildren().clear();
 
-        // Header
         Label header = new Label("   🔍  " + resultats.size() + " résultat" + (resultats.size() > 1 ? "s" : ""));
         header.setStyle("-fx-font-size: 11; -fx-text-fill: #94a3b8; -fx-font-weight: bold; -fx-padding: 6 12;");
         header.setMaxWidth(Double.MAX_VALUE);
@@ -901,7 +916,6 @@ public class AfficherRdvController {
             }
         }
 
-        // Positionner sous le searchField
         if (!searchPopup.isShowing()) {
             javafx.geometry.Bounds bounds = searchField.localToScreen(searchField.getBoundsInLocal());
             if (bounds != null) {
@@ -920,67 +934,51 @@ public class AfficherRdvController {
         item.setStyle("-fx-padding: 10 16; -fx-cursor: hand;");
         item.setMaxWidth(Double.MAX_VALUE);
 
-        // Avatar cercle avec initiale
         String initiale = (r.getMedecin() != null && !r.getMedecin().isEmpty())
                 ? r.getMedecin().substring(0, 1).toUpperCase() : "?";
         Label avatar = new Label(initiale);
         avatar.setMinSize(34, 34);
         avatar.setMaxSize(34, 34);
         avatar.setAlignment(Pos.CENTER);
-        avatar.setStyle(
-                "-fx-background-color: #dbeafe; -fx-background-radius: 17; " +
-                        "-fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 13;"
-        );
+        avatar.setStyle("-fx-background-color: #dbeafe; -fx-background-radius: 17; -fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 13;");
 
-        // Infos
         VBox infos = new VBox(2);
         HBox.setHgrow(infos, Priority.ALWAYS);
 
         Label nom = new Label(r.getMedecin() != null ? r.getMedecin() : "");
         nom.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
 
-        String motifDate = (r.getMotif() != null ? r.getMotif() : "") +
-                " · " + (r.getDate() != null ? r.getDate() : "");
+        String motifDate = (r.getMotif() != null ? r.getMotif() : "") + " · " + (r.getDate() != null ? r.getDate() : "");
         Label detail = new Label(motifDate);
         detail.setStyle("-fx-font-size: 11; -fx-text-fill: #94a3b8;");
 
         infos.getChildren().addAll(nom, detail);
 
-        // Badge statut
         String statut = r.getStatut() != null ? r.getStatut() : "";
         String statutLower = statut.toLowerCase().trim();
         String bgColor, txtColor;
-        if (statutLower.contains("confirm")) { bgColor = "#dcfce7"; txtColor = "#15803d"; }
-        else if (statutLower.contains("annul")) { bgColor = "#fee2e2"; txtColor = "#b91c1c"; }
-        else if (statutLower.contains("termin")) { bgColor = "#ffedd5"; txtColor = "#f97316"; }
-        else { bgColor = "#ffedd5"; txtColor = "#c2410c"; }
+        if (statutLower.contains("confirm"))      { bgColor = "#dcfce7"; txtColor = "#15803d"; }
+        else if (statutLower.contains("annul"))   { bgColor = "#fee2e2"; txtColor = "#b91c1c"; }
+        else if (statutLower.contains("termin"))  { bgColor = "#ffedd5"; txtColor = "#f97316"; }
+        else                                      { bgColor = "#ffedd5"; txtColor = "#c2410c"; }
 
         Label statutBadge = new Label(statut);
         statutBadge.setStyle(
                 "-fx-font-size: 10; -fx-font-weight: bold; -fx-padding: 3 8; " +
-                        "-fx-background-radius: 10; -fx-background-color: " + bgColor + "; " +
-                        "-fx-text-fill: " + txtColor + ";"
+                        "-fx-background-radius: 10; -fx-background-color: " + bgColor + "; -fx-text-fill: " + txtColor + ";"
         );
 
         item.getChildren().addAll(avatar, infos, statutBadge);
 
-        // Hover effect
         item.setOnMouseEntered(e -> item.setStyle("-fx-padding: 10 16; -fx-cursor: hand; -fx-background-color: #eff6ff;"));
         item.setOnMouseExited(e -> item.setStyle("-fx-padding: 10 16; -fx-cursor: hand;"));
-
-        // Clic → ouvrir le détail du RDV
-        item.setOnMouseClicked(e -> {
-            fermerDropdown();
-            ouvrirShowOne(r);
-        });
+        item.setOnMouseClicked(e -> { fermerDropdown(); ouvrirShowOne(r); });
 
         return item;
     }
 
     private void fermerDropdown() {
-        if (searchPopup != null && searchPopup.isShowing()) {
-            searchPopup.hide();
-        }
+        if (searchPopup != null && searchPopup.isShowing()) searchPopup.hide();
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -1016,15 +1014,16 @@ public class AfficherRdvController {
         String lower = recherche.trim().toLowerCase();
         List<medecin> filtres = new ArrayList<>();
         for (medecin m : tousLesMedecins) {
-            String nom = (m.getNom() + " " + m.getPrenom()).toLowerCase();
+            String nom  = (m.getNom() + " " + m.getPrenom()).toLowerCase();
             String spec = m.getSpecialite() != null ? m.getSpecialite().toLowerCase() : "";
-            if (nom.contains(lower) || spec.contains(lower)) {
-                filtres.add(m);
-            }
+            if (nom.contains(lower) || spec.contains(lower)) filtres.add(m);
         }
         afficherMedecinsListe(filtres);
     }
 
+    // ─────────────────────────────────────────────────────────────
+    //  creerCarteMedecin — VERSION AVEC BOUTON 💬 CHAT
+    // ─────────────────────────────────────────────────────────────
     private HBox creerCarteMedecin(medecin m, boolean showQrButton) {
         HBox carte = new HBox(12);
         carte.setAlignment(Pos.CENTER_LEFT);
@@ -1032,29 +1031,34 @@ public class AfficherRdvController {
         carte.setOnMouseEntered(e -> carte.setStyle("-fx-padding: 8 5; -fx-cursor: hand; -fx-background-color: #f0f7ff; -fx-background-radius: 8;"));
         carte.setOnMouseExited(e -> carte.setStyle("-fx-padding: 8 5; -fx-cursor: hand;"));
 
-        // Avatar
+        // ── Avatar ──
         String initiales = "";
         if (m.getPrenom() != null && !m.getPrenom().isEmpty()) initiales += m.getPrenom().substring(0, 1).toUpperCase();
-        if (m.getNom() != null && !m.getNom().isEmpty()) initiales += m.getNom().substring(0, 1).toUpperCase();
+        if (m.getNom()    != null && !m.getNom().isEmpty())    initiales += m.getNom().substring(0, 1).toUpperCase();
         if (initiales.isEmpty()) initiales = "?";
 
         String[] colors = {"#1a73e8", "#e53935", "#f59e0b", "#16a34a", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316"};
         String avatarColor = colors[Math.abs((m.getNom() + m.getPrenom()).hashCode()) % colors.length];
 
         Label avatar = new Label(initiales);
-        avatar.setMinWidth(40); avatar.setMinHeight(40); avatar.setMaxWidth(40); avatar.setMaxHeight(40);
+        avatar.setMinWidth(40); avatar.setMinHeight(40);
+        avatar.setMaxWidth(40); avatar.setMaxHeight(40);
         avatar.setAlignment(Pos.CENTER);
-        avatar.setStyle("-fx-background-color: " + avatarColor + "; -fx-background-radius: 20; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13;");
+        avatar.setStyle(
+                "-fx-background-color: " + avatarColor + "; -fx-background-radius: 20; " +
+                        "-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13;"
+        );
 
-        // Infos
+        // ── Infos ──
         VBox infos = new VBox(2);
         HBox.setHgrow(infos, Priority.ALWAYS);
+
         Label nomLabel = new Label("Dr. " + m.getPrenom().substring(0, 1) + ". " + m.getNom());
         nomLabel.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
+
         Label specLabel = new Label(m.getSpecialite() != null ? m.getSpecialite() : "");
         specLabel.setStyle("-fx-font-size: 11; -fx-text-fill: #999;");
 
-        // Badge disponibilité
         if (m.getDisponible() == 1) {
             Label dispo = new Label("●");
             dispo.setStyle("-fx-text-fill: #16a34a; -fx-font-size: 8;");
@@ -1065,7 +1069,25 @@ public class AfficherRdvController {
             infos.getChildren().addAll(nomLabel, specLabel);
         }
 
-        // Bouton QR code
+        // ── Bouton CHAT 💬 (NOUVEAU) ──
+        Button btnChat = new Button("💬");
+        btnChat.setTooltip(new Tooltip("Envoyer un message"));
+        btnChat.setStyle(
+                "-fx-background-color: #e3f2fd; -fx-font-size: 14; " +
+                        "-fx-cursor: hand; -fx-padding: 5 8; -fx-background-radius: 8;"
+        );
+        btnChat.setOnMouseEntered(e -> btnChat.setStyle(
+                "-fx-background-color: #1a73e8; -fx-text-fill: white; " +
+                        "-fx-font-size: 14; -fx-cursor: hand; -fx-padding: 5 8; -fx-background-radius: 8;"
+        ));
+        btnChat.setOnMouseExited(e -> btnChat.setStyle(
+                "-fx-background-color: #e3f2fd; -fx-font-size: 14; " +
+                        "-fx-cursor: hand; -fx-padding: 5 8; -fx-background-radius: 8;"
+        ));
+        // ← Ouvre le chat avec CE médecin spécifique
+        btnChat.setOnAction(e -> ouvrirChatAvecMedecin(m));
+
+        // ── Bouton QR code ──
         Button btnQr = new Button("📱");
         btnQr.setTooltip(new Tooltip("Voir QR Code"));
         btnQr.setStyle("-fx-background-color: transparent; -fx-font-size: 16; -fx-cursor: hand; -fx-padding: 4;");
@@ -1073,14 +1095,74 @@ public class AfficherRdvController {
         btnQr.setOnMouseExited(e -> btnQr.setStyle("-fx-background-color: transparent; -fx-font-size: 16; -fx-cursor: hand; -fx-padding: 4;"));
         btnQr.setOnAction(e -> ouvrirPopupQrMedecin(m));
 
-        carte.getChildren().addAll(avatar, infos, btnQr);
+        carte.getChildren().addAll(avatar, infos, btnChat, btnQr);
 
-        // Click sur la carte → popup QR
+        // Clic sur la carte (hors boutons) → popup QR
         carte.setOnMouseClicked(e -> {
-            if (e.getTarget() != btnQr) ouvrirPopupQrMedecin(m);
+            if (e.getTarget() != btnQr && e.getTarget() != btnChat) {
+                ouvrirPopupQrMedecin(m);
+            }
         });
 
         return carte;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  OUVRIR LE CHAT AVEC UN MÉDECIN (NOUVEAU)
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * Crée ou réutilise le client socket du patient,
+     * puis ouvre une fenêtre de chat dédiée à CE médecin.
+     *
+     * userId patient  = "patient_1"   (selon PATIENT_ID_COURANT)
+     * userId médecin  = "medecin_sarah_amrani"  (généré par slugMedecin)
+     */
+    private void ouvrirChatAvecMedecin(medecin m) {
+        try {
+            // 1. S'assurer que le serveur tourne
+            SocketServer serveur = SocketServer.getInstance();
+            if (!serveur.isRunning()) {
+                serveur.demarrer();
+                Thread.sleep(400);
+            }
+
+            // 2. IDs socket
+            String patientUserId = SocketClient.userIdPatient(PATIENT_ID_COURANT);
+            String medecinUserId = SocketClient.slugMedecin(m.getPrenom() + " " + m.getNom());
+            String medecinNom    = "Dr. " + m.getPrenom() + " " + m.getNom();
+
+            // 3. Client socket patient (singleton — pas de double connexion)
+            SocketClient clientPatient = SocketClient.getInstance("patient", patientUserId);
+            if (!clientPatient.isConnecte()) {
+                clientPatient.connecter();
+                Thread.sleep(300);
+            }
+
+            // 4. Charger Chat.fxml
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Chat.fxml"));
+            VBox root = loader.load();
+
+            // 5. Initialiser le controller avec le médecin cible
+            ChatController chatController = loader.getController();
+            chatController.initChat(clientPatient, medecinUserId, medecinNom);
+
+            // 6. Ouvrir dans une Stage modale centrée sur la fenêtre parente
+            Stage chatStage = new Stage();
+            chatStage.initModality(Modality.APPLICATION_MODAL);
+            chatStage.initStyle(StageStyle.DECORATED);
+            chatStage.setTitle("💬 Chat — " + medecinNom);
+            chatStage.setScene(new Scene(root, 480, 580));
+            chatStage.setResizable(true);
+            chatStage.setMinWidth(380);
+            chatStage.setMinHeight(450);
+            chatStage.initOwner(rdvListContainer.getScene().getWindow());
+            chatStage.show();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            afficherErreur("Impossible d'ouvrir le chat : " + ex.getMessage());
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -1102,9 +1184,9 @@ public class AfficherRdvController {
         Label compteur = new Label(tousLesMedecins.size() + " médecin" + (tousLesMedecins.size() > 1 ? "s" : ""));
         compteur.setStyle("-fx-font-size: 12; -fx-text-fill: #94a3b8;");
 
-        TextField searchPopup = new TextField();
-        searchPopup.setPromptText("🔍 Rechercher un médecin ou une spécialité...");
-        searchPopup.setStyle("-fx-font-size: 13; -fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: #e2e8f0; -fx-padding: 10 16; -fx-background-color: #f8fafc;");
+        TextField searchPopupField = new TextField();
+        searchPopupField.setPromptText("🔍 Rechercher un médecin ou une spécialité...");
+        searchPopupField.setStyle("-fx-font-size: 13; -fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: #e2e8f0; -fx-padding: 10 16; -fx-background-color: #f8fafc;");
 
         VBox listeContainer = new VBox(6);
         ScrollPane scrollListe = new ScrollPane(listeContainer);
@@ -1113,19 +1195,16 @@ public class AfficherRdvController {
         scrollListe.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;");
         VBox.setVgrow(scrollListe, Priority.ALWAYS);
 
-        // Remplir la liste
         Runnable remplirListe = () -> {
             listeContainer.getChildren().clear();
-            String query = searchPopup.getText();
+            String query = searchPopupField.getText();
             String lower = (query != null) ? query.trim().toLowerCase() : "";
 
             for (medecin m : tousLesMedecins) {
-                String nom = (m.getNom() + " " + m.getPrenom()).toLowerCase();
+                String nom  = (m.getNom() + " " + m.getPrenom()).toLowerCase();
                 String spec = m.getSpecialite() != null ? m.getSpecialite().toLowerCase() : "";
-
                 if (lower.isEmpty() || nom.contains(lower) || spec.contains(lower)) {
-                    HBox carte = creerCarteMedecinPopup(m);
-                    listeContainer.getChildren().add(carte);
+                    listeContainer.getChildren().add(creerCarteMedecinPopup(m));
                 }
             }
 
@@ -1139,9 +1218,9 @@ public class AfficherRdvController {
         };
 
         remplirListe.run();
-        searchPopup.textProperty().addListener((obs, old, val) -> remplirListe.run());
+        searchPopupField.textProperty().addListener((obs, old, val) -> remplirListe.run());
 
-        content.getChildren().addAll(titre, compteur, searchPopup, scrollListe);
+        content.getChildren().addAll(titre, compteur, searchPopupField, scrollListe);
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
 
@@ -1161,10 +1240,10 @@ public class AfficherRdvController {
         carte.setOnMouseEntered(e -> carte.setStyle("-fx-padding: 12 15; -fx-background-color: #eff6ff; -fx-background-radius: 10;"));
         carte.setOnMouseExited(e -> carte.setStyle("-fx-padding: 12 15; -fx-background-color: #f8fafc; -fx-background-radius: 10;"));
 
-        // Avatar
         String initiales = "";
         if (m.getPrenom() != null && !m.getPrenom().isEmpty()) initiales += m.getPrenom().substring(0, 1).toUpperCase();
-        if (m.getNom() != null && !m.getNom().isEmpty()) initiales += m.getNom().substring(0, 1).toUpperCase();
+        if (m.getNom()    != null && !m.getNom().isEmpty())    initiales += m.getNom().substring(0, 1).toUpperCase();
+
         String[] colors = {"#1a73e8", "#e53935", "#f59e0b", "#16a34a", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316"};
         String avatarColor = colors[Math.abs((m.getNom() + m.getPrenom()).hashCode()) % colors.length];
 
@@ -1173,29 +1252,31 @@ public class AfficherRdvController {
         avatar.setAlignment(Pos.CENTER);
         avatar.setStyle("-fx-background-color: " + avatarColor + "; -fx-background-radius: 22; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15;");
 
-        // Infos
         VBox infos = new VBox(3);
         HBox.setHgrow(infos, Priority.ALWAYS);
         Label nomLabel = new Label("Dr. " + m.getPrenom() + " " + m.getNom());
         nomLabel.setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
         Label specLabel = new Label(m.getSpecialite() != null ? m.getSpecialite() : "");
         specLabel.setStyle("-fx-font-size: 12; -fx-text-fill: #64748b;");
-
-        String dispoText = m.getDisponible() == 1 ? "● Disponible" : "○ Indisponible";
         String dispoColor = m.getDisponible() == 1 ? "#16a34a" : "#9ca3af";
-        Label dispoLabel = new Label(dispoText);
+        Label dispoLabel = new Label(m.getDisponible() == 1 ? "● Disponible" : "○ Indisponible");
         dispoLabel.setStyle("-fx-font-size: 11; -fx-text-fill: " + dispoColor + "; -fx-font-weight: bold;");
-
         infos.getChildren().addAll(nomLabel, specLabel, dispoLabel);
 
-        // Bouton QR
+        // Bouton Chat dans le popup "Voir tout"
+        Button btnChat = new Button("💬 Chat");
+        btnChat.setStyle("-fx-background-color: #e3f2fd; -fx-text-fill: #1a73e8; -fx-font-size: 12; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;");
+        btnChat.setOnMouseEntered(e -> btnChat.setStyle("-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;"));
+        btnChat.setOnMouseExited(e -> btnChat.setStyle("-fx-background-color: #e3f2fd; -fx-text-fill: #1a73e8; -fx-font-size: 12; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;"));
+        btnChat.setOnAction(e -> ouvrirChatAvecMedecin(m));
+
         Button btnQr = new Button("📱 QR Code");
         btnQr.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0369a1; -fx-font-size: 12; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;");
         btnQr.setOnMouseEntered(e -> btnQr.setStyle("-fx-background-color: #0369a1; -fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;"));
         btnQr.setOnMouseExited(e -> btnQr.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0369a1; -fx-font-size: 12; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;"));
         btnQr.setOnAction(e -> ouvrirPopupQrMedecin(m));
 
-        carte.getChildren().addAll(avatar, infos, btnQr);
+        carte.getChildren().addAll(avatar, infos, btnChat, btnQr);
         return carte;
     }
 
@@ -1212,10 +1293,9 @@ public class AfficherRdvController {
         content.setAlignment(Pos.CENTER);
         content.setStyle("-fx-padding: 25;");
 
-        // ── Header avec avatar ──
         String initiales = "";
         if (m.getPrenom() != null && !m.getPrenom().isEmpty()) initiales += m.getPrenom().substring(0, 1).toUpperCase();
-        if (m.getNom() != null && !m.getNom().isEmpty()) initiales += m.getNom().substring(0, 1).toUpperCase();
+        if (m.getNom()    != null && !m.getNom().isEmpty())    initiales += m.getNom().substring(0, 1).toUpperCase();
         String[] colors = {"#1a73e8", "#e53935", "#f59e0b", "#16a34a", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316"};
         String avatarColor = colors[Math.abs((m.getNom() + m.getPrenom()).hashCode()) % colors.length];
 
@@ -1224,13 +1304,11 @@ public class AfficherRdvController {
         avatarBig.setAlignment(Pos.CENTER);
         avatarBig.setStyle("-fx-background-color: " + avatarColor + "; -fx-background-radius: 35; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 24;");
 
-        Label nomLabel = new Label("Dr. " + m.getPrenom() + " " + m.getNom());
+        Label nomLabel  = new Label("Dr. " + m.getPrenom() + " " + m.getNom());
         nomLabel.setStyle("-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
-
         Label specLabel = new Label(m.getSpecialite() != null ? m.getSpecialite() : "");
         specLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #64748b;");
 
-        // ── QR Code via API ──
         String qrData = "Dr. " + m.getPrenom() + " " + m.getNom()
                 + "\nSpécialité: " + (m.getSpecialite() != null ? m.getSpecialite() : "N/A")
                 + "\nType: " + (m.getType() != null ? m.getType() : "N/A")
@@ -1244,10 +1322,8 @@ public class AfficherRdvController {
         ImageView qrImage = new ImageView();
         qrImage.setFitWidth(200);
         qrImage.setFitHeight(200);
-
         try {
-            Image img = new Image(qrUrl, true);
-            qrImage.setImage(img);
+            qrImage.setImage(new Image(qrUrl, true));
         } catch (Exception e) {
             System.err.println("Erreur chargement QR : " + e.getMessage());
         }
@@ -1259,18 +1335,16 @@ public class AfficherRdvController {
         Label qrLabel = new Label("📱 Scannez pour obtenir les informations");
         qrLabel.setStyle("-fx-font-size: 11; -fx-text-fill: #94a3b8;");
 
-        // ── Infos détaillées ──
         VBox infoCard = new VBox(8);
         infoCard.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-padding: 15; -fx-border-color: #e2e8f0; -fx-border-radius: 10;");
         infoCard.getChildren().addAll(
-                creerLigneInfoMedecin("👨‍⚕️ Nom", "Dr. " + m.getPrenom() + " " + m.getNom()),
-                creerLigneInfoMedecin("🏥 Spécialité", m.getSpecialite()),
-                creerLigneInfoMedecin("📋 Type", m.getType()),
+                creerLigneInfoMedecin("👨‍⚕️ Nom",        "Dr. " + m.getPrenom() + " " + m.getNom()),
+                creerLigneInfoMedecin("🏥 Spécialité",   m.getSpecialite()),
+                creerLigneInfoMedecin("📋 Type",         m.getType()),
                 creerLigneInfoMedecin("✅ Disponibilité", m.getDisponible() == 1 ? "Disponible" : "Indisponible")
         );
 
         content.getChildren().addAll(avatarBig, nomLabel, specLabel, qrBox, qrLabel, infoCard);
-
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
 
@@ -1296,8 +1370,8 @@ public class AfficherRdvController {
     }
 
     // ========== UTILITAIRES ==========
-    private void afficherSucces(String msg) { Alert a = new Alert(Alert.AlertType.INFORMATION); a.setTitle("Succès"); a.setContentText(msg); a.show(); }
-    private void afficherErreur(String msg)  { Alert a = new Alert(Alert.AlertType.ERROR);       a.setTitle("Erreur");  a.setContentText(msg); a.show(); }
+    private void afficherSucces(String msg) { Alert a = new Alert(Alert.AlertType.INFORMATION); a.setTitle("Succès");  a.setContentText(msg); a.show(); }
+    private void afficherErreur(String msg)  { Alert a = new Alert(Alert.AlertType.ERROR);       a.setTitle("Erreur"); a.setContentText(msg); a.show(); }
     private void activerBlur()   { rdvListContainer.getScene().getRoot().setEffect(new GaussianBlur(10)); }
     private void desactiverBlur(){ rdvListContainer.getScene().getRoot().setEffect(null); }
 }

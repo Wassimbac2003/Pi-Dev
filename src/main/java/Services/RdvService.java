@@ -86,6 +86,37 @@ public class RdvService implements ICrud<rdv> {
         return list;
     }
 
+    /**
+     * Trouve tous les RDV d'un médecin spécifique
+     */
+    public List<rdv> findByMedecinUserId(int medecinUserId) throws SQLException {
+        List<rdv> rdvs = new ArrayList<>();
+
+        String sql = "SELECT * FROM rdv WHERE medecin_user_id = ? ORDER BY date DESC";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, medecinUserId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                rdv r = new rdv();
+                r.setId(rs.getInt("id"));
+                r.setDate(rs.getString("date"));
+                r.setHdebut(rs.getString("hdebut"));
+                r.setHfin(rs.getString("hfin"));
+                r.setStatut(rs.getString("statut"));
+                r.setMotif(rs.getString("motif"));
+                r.setMedecin(rs.getString("medecin"));
+                r.setMessage(rs.getString("message"));
+                r.setPatient_id(rs.getInt("patient_id"));
+                r.setMedecin_user_id(rs.getInt("medecin_user_id"));
+                rdvs.add(r);
+            }
+        }
+
+        return rdvs;
+    }
+
     public void updateStatut(int id, String statut) throws SQLException {
         String sql = "UPDATE rdv SET statut=? WHERE id=?";
         PreparedStatement ps = connection.prepareStatement(sql);
