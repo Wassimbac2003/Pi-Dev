@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="Controllers.VideoCallController"
+      spacing="0" style="-fx-background-color: #0f172a;">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="15"
+          style="-fx-background-color: #1e293b;
+                 -fx-padding: 13 20;
+                 -fx-border-color: #334155;
+                 -fx-border-width: 0 0 1 0;">
+
+        <Label text="📹" style="-fx-font-size: 18;"/>
+
+        <Label fx:id="lblTitre"
+               style="-fx-font-size: 14; -fx-font-weight: bold;
+                      -fx-text-fill: white;"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Button fx:id="btnFermer" text="✕  Terminer"
+                style="-fx-background-color: #dc2626;
+                       -fx-text-fill: white; -fx-font-weight: bold;
+                       -fx-background-radius: 8;
+                       -fx-padding: 9 20; -fx-cursor: hand;"/>
+    </HBox>
+
+    <!-- Zone principale dynamique -->
+    <StackPane fx:id="mainContent" VBox.vgrow="ALWAYS"
+               style="-fx-background-color: #0f172a;"/>
+
+</VBox>

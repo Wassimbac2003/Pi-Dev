@@ -457,6 +457,7 @@ public class CalendrierWizardController {
             String hf = calculerHeureFin(selectedHeure);
             String msg = (selectedMessage != null && !selectedMessage.isEmpty()) ? selectedMessage : "Paiement: " + paiement;
             rdv r = new rdv(selectedDate.toString(), selectedHeure, hf, statut, selectedMotif != null ? selectedMotif : "Consultation", nm, msg, 1, selectedMedecin.getUser_id());
+            r.setTypeConsultation(selectedType); // ← ajouter cette ligne
             rdvService.insert(r);
             afficherSucces("Confirme".equalsIgnoreCase(statut));
         } catch (SQLException e) { Alert a = new Alert(Alert.AlertType.ERROR); a.setContentText("Erreur : " + e.getMessage()); a.show(); }

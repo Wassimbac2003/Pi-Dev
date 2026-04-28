@@ -706,3 +706,23 @@
     -fx-font-weight: bold;
     -fx-text-fill: white;
 }
+/* ══════════════════════════════════════
+   TOAST NOTIFICATION — style iOS compact
+══════════════════════════════════════ */
+
+.toast-notif {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 10;
+    -fx-padding: 8 12;
+}
+
+.toast-nom {
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.toast-apercu {
+    -fx-font-size: 11;
+    -fx-text-fill: #94a3b8;
+}

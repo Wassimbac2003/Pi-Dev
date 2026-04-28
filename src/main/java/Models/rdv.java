@@ -76,6 +76,11 @@ public class rdv {
     public String getFeedbackCommentaire() { return feedbackCommentaire; }
     public void setFeedbackCommentaire(String feedbackCommentaire) { this.feedbackCommentaire = feedbackCommentaire; }
 
+    private String typeConsultation; // "en_ligne" ou "presentiel"
+
+    public String getTypeConsultation() { return typeConsultation; }
+    public void setTypeConsultation(String typeConsultation) { this.typeConsultation = typeConsultation; }
+
     public String getFeedbackDate() { return feedbackDate; }
     public void setFeedbackDate(String feedbackDate) { this.feedbackDate = feedbackDate; }
     @Override

@@ -46,7 +46,7 @@
                         <Label fx:id="prochainMotif" text="Consultation"
                                style="-fx-font-size: 14; -fx-text-fill: rgba(255,255,255,0.8);"/>
                         <HBox spacing="10" style="-fx-padding: 8 0 0 0;">
-                            <Button text="📹 Lancer Visio"
+                            <Button fx:id="btnLancerVisio" text="📹 Lancer Visio"
                                     style="-fx-background-color: white; -fx-text-fill: #4a6cf7; -fx-font-size: 12; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand;"/>
                             <Button text="Détails"
                                     style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 12; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: rgba(255,255,255,0.4); -fx-border-radius: 8;"/>

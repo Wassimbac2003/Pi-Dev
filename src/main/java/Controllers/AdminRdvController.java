@@ -35,10 +35,6 @@ import java.util.stream.Collectors;
 
 public class AdminRdvController {
 
-    // ══════════════════════════════════════════════════════════════
-    //  MÉDECIN — socket ID = "medecin_sarah_amrani"
-    //  Identique à ce que le patient génère via slugMedecin()
-    // ══════════════════════════════════════════════════════════════
     private static final int    MEDECIN_USER_ID   = 1;
     private static final String MEDECIN_NOM       = "Dr. Sarah Amrani";
     private static final String MEDECIN_NOM_SLUG  = "Sarah Amrani";
@@ -88,9 +84,8 @@ public class AdminRdvController {
     }
 
     // ══════════════════════════════════════════════════════════════
-    //  🔔 TOAST — barre de notif animée en haut
+    //  TOAST
     // ══════════════════════════════════════════════════════════════
-
     private void setupToastContainer() {
         toastContainer = new StackPane();
         toastContainer.setPickOnBounds(false);
@@ -101,108 +96,62 @@ public class AdminRdvController {
     }
 
     private void afficherToast(String nomPatient, String texteMessage) {
-        HBox toast = new HBox(12);
-        toast.setAlignment(Pos.CENTER_LEFT);
-        toast.setMaxWidth(400);
-        toast.setStyle(
-                "-fx-background-color: #1e293b;" +
-                        "-fx-background-radius: 14;" +
-                        "-fx-padding: 13 20;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 16, 0, 0, 5);"
-        );
-
+        StackPane iconBox = new StackPane();
+        iconBox.setMinSize(28, 28); iconBox.setMaxSize(28, 28);
+        iconBox.setStyle("-fx-background-color: #1a73e8; -fx-background-radius: 6;");
         Label icone = new Label("💬");
-        icone.setStyle("-fx-font-size: 20;");
+        icone.setStyle("-fx-font-size: 13; -fx-text-fill: white;");
+        iconBox.getChildren().add(icone);
 
-        VBox textes = new VBox(3);
-        Label titre = new Label("Nouveau message — " + nomPatient);
-        titre.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #f1f5f9;");
-        String apercu = texteMessage.length() > 45 ? texteMessage.substring(0, 45) + "…" : texteMessage;
+        Label titre = new Label(nomPatient);
+        titre.getStyleClass().add("toast-nom");
+        String apercu = texteMessage.length() > 30 ? texteMessage.substring(0, 30) + "…" : texteMessage;
         Label preview = new Label(apercu);
-        preview.setStyle("-fx-font-size: 11; -fx-text-fill: #94a3b8;");
-        textes.getChildren().addAll(titre, preview);
-        HBox.setHgrow(textes, Priority.ALWAYS);
+        preview.getStyleClass().add("toast-apercu");
+        VBox textes = new VBox(2, titre, preview);
 
-        Circle dot = new Circle(5, Color.web("#4ade80"));
-        Timeline pulse = new Timeline(
-                new KeyFrame(Duration.ZERO,        new KeyValue(dot.radiusProperty(), 5.0)),
-                new KeyFrame(Duration.millis(600),  new KeyValue(dot.radiusProperty(), 7.5)),
-                new KeyFrame(Duration.millis(1200), new KeyValue(dot.radiusProperty(), 5.0))
-        );
-        pulse.setCycleCount(Animation.INDEFINITE);
-        pulse.play();
+        HBox toast = new HBox(8, iconBox, textes);
+        toast.setAlignment(Pos.CENTER_LEFT);
+        toast.getStyleClass().add("toast-notif");
+        toast.setMaxSize(260, 52); toast.setMinSize(200, 52); toast.setPrefSize(260, 52);
+        StackPane.setAlignment(toast, Pos.TOP_RIGHT);
+        StackPane.setMargin(toast, new javafx.geometry.Insets(12, 16, 0, 0));
+        toastContainer.getChildren().add(toast);
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        toast.getChildren().addAll(icone, textes, spacer, dot);
-
-        StackPane wrapper = new StackPane(toast);
-        wrapper.setPickOnBounds(false);
-        StackPane.setAlignment(toast, Pos.TOP_CENTER);
-        toastContainer.getChildren().add(wrapper);
-
-        // ── Entrée ──
-        toast.setTranslateY(-90);
-        toast.setOpacity(0);
-
-        TranslateTransition slideIn = new TranslateTransition(Duration.millis(340), toast);
-        slideIn.setFromY(-90);
-        slideIn.setToY(0);
-        slideIn.setInterpolator(Interpolator.EASE_OUT);
-
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(340), toast);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-
-        ParallelTransition entree = new ParallelTransition(slideIn, fadeIn);
-
-        // ── Sortie ──
-        TranslateTransition slideOut = new TranslateTransition(Duration.millis(280), toast);
-        slideOut.setFromY(0);
-        slideOut.setToY(-90);
-        slideOut.setInterpolator(Interpolator.EASE_IN);
-
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(280), toast);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-
+        toast.setTranslateY(-60); toast.setOpacity(0);
+        TranslateTransition slideIn = new TranslateTransition(Duration.millis(300), toast);
+        slideIn.setFromY(-60); slideIn.setToY(0); slideIn.setInterpolator(Interpolator.EASE_OUT);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), toast);
+        fadeIn.setFromValue(0); fadeIn.setToValue(1);
+        TranslateTransition slideOut = new TranslateTransition(Duration.millis(250), toast);
+        slideOut.setFromY(0); slideOut.setToY(-60); slideOut.setInterpolator(Interpolator.EASE_IN);
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(250), toast);
+        fadeOut.setFromValue(1); fadeOut.setToValue(0);
         ParallelTransition sortie = new ParallelTransition(slideOut, fadeOut);
-        sortie.setOnFinished(e -> {
-            toastContainer.getChildren().remove(wrapper);
-            pulse.stop();
-        });
-
-        SequentialTransition sequence = new SequentialTransition(
-                entree,
+        sortie.setOnFinished(e -> toastContainer.getChildren().remove(toast));
+        new SequentialTransition(
+                new ParallelTransition(slideIn, fadeIn),
                 new PauseTransition(Duration.seconds(3)),
                 sortie
-        );
-        sequence.play();
+        ).play();
     }
 
     // ══════════════════════════════════════════════════════════════
-    //  SOCKET LISTENER — badge + toast en temps réel
+    //  SOCKET LISTENER
     // ══════════════════════════════════════════════════════════════
     private void startSocketNotifListener() {
         new Thread(() -> {
             try {
                 SocketClient client = SocketClient.getInstance("medecin", MEDECIN_SOCKET_ID);
-                if (!client.isConnecte()) {
-                    client.connecter();
-                    Thread.sleep(300);
-                }
+                if (!client.isConnecte()) { client.connecter(); Thread.sleep(300); }
 
                 fabChatListener = (String[] data) -> {
                     if (data.length < 3) return;
                     String senderSocketId = data[0];
                     String texte          = data[2];
                     String nomPatient     = nomDepuisSocketId(senderSocketId);
-
                     Platform.runLater(() -> {
-                        // 1. Badge +1
                         updateBadge(totalUnread + 1);
-
-                        // 2. Flash rouge sur la bulle
                         fabButton.getChildren().stream()
                                 .filter(n -> n instanceof Circle).map(n -> (Circle) n)
                                 .findFirst().ifPresent(bg -> {
@@ -210,15 +159,10 @@ public class AdminRdvController {
                                     new Timeline(new KeyFrame(Duration.millis(700),
                                             e -> bg.setFill(Color.web("#1a73e8")))).play();
                                 });
-
-                        // 3. Toast animé en haut
                         afficherToast(nomPatient, texte);
                     });
                 };
-
                 client.addOnChatRecu(fabChatListener);
-                System.out.println("✅ [NOTIF] Listener actif — " + MEDECIN_SOCKET_ID);
-
             } catch (Exception e) {
                 System.err.println("⚠️ [NOTIF] " + e.getMessage());
             }
@@ -229,9 +173,7 @@ public class AdminRdvController {
         try {
             int id = Integer.parseInt(socketId.replace("patient_", ""));
             return obtenirNomPatient(id);
-        } catch (Exception e) {
-            return socketId;
-        }
+        } catch (Exception e) { return socketId; }
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -256,7 +198,6 @@ public class AdminRdvController {
     private void chargerDonnees() {
         try {
             tousLesRdvs = rdvService.findByMedecinUserId(MEDECIN_USER_ID);
-            System.out.println("✅ [ADMIN] " + tousLesRdvs.size() + " RDV | socket : " + MEDECIN_SOCKET_ID);
             calculerStats(tousLesRdvs);
             appliquerFiltres();
         } catch (SQLException e) {
@@ -352,7 +293,7 @@ public class AdminRdvController {
     }
 
     // ══════════════════════════════════════════════════════════════
-    //  AFFICHER LIGNES
+    //  AFFICHER LIGNES ← BOUTON VISIO AJOUTÉ ICI
     // ══════════════════════════════════════════════════════════════
     private void afficherLignes(List<rdv> rdvs) {
         rdvTableContainer.getChildren().clear();
@@ -366,10 +307,12 @@ public class AdminRdvController {
             ligne.setOnMouseEntered(e -> ligne.setStyle("-fx-padding: 15 25; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-background-color: #eff6ff;"));
             ligne.setOnMouseExited(e -> ligne.setStyle(ns));
 
+            // ── RÉF ──
             Label ref = new Label("#RDV-" + r.getId());
             ref.setPrefWidth(100);
             ref.setStyle("-fx-font-size: 12; -fx-text-fill: #94a3b8; -fx-font-weight: bold;");
 
+            // ── PATIENT ──
             String nomP = obtenirNomPatient(r.getPatient_id());
             HBox patBox = new HBox(8);
             patBox.setAlignment(Pos.CENTER_LEFT); patBox.setPrefWidth(280);
@@ -385,6 +328,7 @@ public class AdminRdvController {
             pi.getChildren().addAll(pn, pm);
             patBox.getChildren().addAll(av, pi);
 
+            // ── DATE & HEURE ──
             VBox dateBox = new VBox(2);
             dateBox.setPrefWidth(200);
             Label dl = new Label(formaterDateAffichage(r.getDate()));
@@ -395,6 +339,7 @@ public class AdminRdvController {
             hl.setStyle("-fx-font-size: 11; -fx-text-fill: #94a3b8;");
             dateBox.getChildren().addAll(dl, hl);
 
+            // ── STATUT ──
             Label statLabel = new Label();
             statLabel.setPrefWidth(150);
             String couleur, statutText;
@@ -412,13 +357,16 @@ public class AdminRdvController {
             else                                                    { couleur = "#64748b"; statutText = r.getStatut(); }
 
             statLabel.setText(statutText);
-            statLabel.setStyle("-fx-font-size: 11; -fx-text-fill: " + couleur + "; -fx-background-color: " + couleur + "18; -fx-background-radius: 12; -fx-padding: 5 12; -fx-font-weight: bold;");
+            statLabel.setStyle("-fx-font-size: 11; -fx-text-fill: " + couleur +
+                    "; -fx-background-color: " + couleur + "18; -fx-background-radius: 12; -fx-padding: 5 12; -fx-font-weight: bold;");
 
+            // ── ACTIONS ──
             HBox actions = new HBox(6);
             actions.setAlignment(Pos.CENTER_LEFT);
             boolean noAction = sl.contains("annul") || sl.contains("expir")
                     || sl.contains("passe") || sl.contains("passé") || ep;
 
+            // Bouton Chat
             Button bChat = new Button("💬");
             bChat.setTooltip(new Tooltip("Discuter avec le patient"));
             bChat.setStyle("-fx-background-color: #e3f2fd; -fx-text-fill: #1a73e8; -fx-font-size: 13; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 10;");
@@ -427,6 +375,7 @@ public class AdminRdvController {
             bChat.setOnAction(ev -> ouvrirChatAvecPatient(r));
             actions.getChildren().add(bChat);
 
+            // Bouton Confirmer
             if (sl.contains("attente") && !ep) {
                 Button bConf = new Button("✓");
                 bConf.setTooltip(new Tooltip("Confirmer"));
@@ -437,6 +386,7 @@ public class AdminRdvController {
                 actions.getChildren().add(bConf);
             }
 
+            // Boutons Modifier + Supprimer
             if (!noAction) {
                 Button bEdit = new Button("✏");
                 bEdit.setTooltip(new Tooltip("Modifier"));
@@ -454,8 +404,94 @@ public class AdminRdvController {
                 actions.getChildren().addAll(bEdit, bDel);
             }
 
+            // ══ BOUTON VISIO 📹 — NOUVEAU ══
+            boolean estEnLigne    = "en_ligne".equalsIgnoreCase(r.getTypeConsultation());
+            boolean estAujourdHui = LocalDate.parse(r.getDate()).equals(LocalDate.now());
+            boolean estConfirme   = sl.contains("confirm");
+
+            if (estEnLigne && estConfirme && !ep) {
+                Button bVisio = new Button(estAujourdHui ? "📹 Visio" : "📹");
+                bVisio.setTooltip(new Tooltip(
+                        estAujourdHui
+                                ? "Lancer la consultation vidéo"
+                                : "Disponible le " + formaterDateAffichage(r.getDate())
+                ));
+
+                if (estAujourdHui) {
+                    // ✅ Jour J → vert pulsant actif
+                    bVisio.setStyle(
+                            "-fx-background-color: linear-gradient(to right, #16a34a, #15803d); " +
+                                    "-fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold; " +
+                                    "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; " +
+                                    "-fx-effect: dropshadow(gaussian, rgba(22,163,74,0.45), 8, 0, 0, 3);"
+                    );
+                    bVisio.setOnMouseEntered(ev -> bVisio.setStyle(
+                            "-fx-background-color: linear-gradient(to right, #15803d, #166534); " +
+                                    "-fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold; " +
+                                    "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; " +
+                                    "-fx-effect: dropshadow(gaussian, rgba(22,163,74,0.65), 12, 0, 0, 4);"
+                    ));
+                    bVisio.setOnMouseExited(ev -> bVisio.setStyle(
+                            "-fx-background-color: linear-gradient(to right, #16a34a, #15803d); " +
+                                    "-fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold; " +
+                                    "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; " +
+                                    "-fx-effect: dropshadow(gaussian, rgba(22,163,74,0.45), 8, 0, 0, 3);"
+                    ));
+
+                    // Pulsation verte
+                    ScaleTransition pulse = new ScaleTransition(Duration.millis(900), bVisio);
+                    pulse.setFromX(1.0); pulse.setFromY(1.0);
+                    pulse.setToX(1.08); pulse.setToY(1.08);
+                    pulse.setCycleCount(Animation.INDEFINITE);
+                    pulse.setAutoReverse(true);
+                    pulse.play();
+
+                    bVisio.setOnAction(ev -> lancerVisioMedecin(r));
+
+                } else {
+                    // Confirmé mais pas aujourd'hui → grisé
+                    bVisio.setStyle(
+                            "-fx-background-color: #e2e8f0; -fx-text-fill: #94a3b8; " +
+                                    "-fx-font-size: 11; -fx-background-radius: 8; " +
+                                    "-fx-padding: 5 10; -fx-cursor: default;"
+                    );
+                    bVisio.setDisable(true);
+                }
+
+                actions.getChildren().add(bVisio);
+            }
+            // ══ FIN BOUTON VISIO ══
+
             ligne.getChildren().addAll(ref, patBox, dateBox, statLabel, actions);
             rdvTableContainer.getChildren().add(ligne);
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  LANCER VISIO MÉDECIN ← NOUVELLE MÉTHODE
+    // ══════════════════════════════════════════════════════════════
+    private void lancerVisioMedecin(rdv r) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/VideoCall.fxml"));
+            VBox root = loader.load();
+            VideoCallController ctrl = loader.getController();
+            ctrl.initCall(r, obtenirNomPatient(r.getPatient_id()));
+
+            Stage stage = new Stage();
+            stage.setTitle("📹 Consultation Vidéo — " + obtenirNomPatient(r.getPatient_id()));
+            stage.setScene(new Scene(root, 820, 580));
+            stage.setMinWidth(640);
+            stage.setMinHeight(480);
+            stage.initOwner(rdvTableContainer.getScene().getWindow());
+            stage.show();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Impossible de lancer la visio : " + ex.getMessage());
+            alert.showAndWait();
         }
     }
 
@@ -469,10 +505,7 @@ public class AdminRdvController {
             String patientNom    = obtenirNomPatient(r.getPatient_id());
 
             SocketClient client = SocketClient.getInstance("medecin", medecinUserId);
-            if (!client.isConnecte()) {
-                client.connecter();
-                Thread.sleep(300);
-            }
+            if (!client.isConnecte()) { client.connecter(); Thread.sleep(300); }
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/AdminChat.fxml"));
             VBox root = loader.load();
@@ -487,21 +520,15 @@ public class AdminRdvController {
             stage.setTitle("💬 Chat — " + patientNom);
             stage.setScene(new Scene(root, 480, 580));
             stage.setResizable(true);
-            stage.setMinWidth(380);
-            stage.setMinHeight(450);
+            stage.setMinWidth(380); stage.setMinHeight(450);
             stage.initOwner(rdvTableContainer.getScene().getWindow());
             stage.show();
-
-            stage.setOnHidden(ev -> {
-                ctrl.onFermeture();
-                refreshUnreadBadge();
-            });
+            stage.setOnHidden(ev -> { ctrl.onFermeture(); refreshUnreadBadge(); });
 
         } catch (Exception ex) {
             ex.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur");
-            alert.setHeaderText(null);
+            alert.setTitle("Erreur"); alert.setHeaderText(null);
             alert.setContentText("Impossible d'ouvrir le chat : " + ex.getMessage());
             alert.showAndWait();
         }
@@ -513,29 +540,22 @@ public class AdminRdvController {
     private void setupFAB() {
         Circle bgCircle = new Circle(27);
         bgCircle.setFill(Color.web("#1a73e8"));
-
         Label iconLabel = new Label("💬");
         iconLabel.setFont(Font.font(20));
-
         Circle badgeBg = new Circle(10);
         badgeBg.setFill(Color.web("#e24b4a"));
         badgeBg.setStroke(Color.web("#f0f4f8"));
         badgeBg.setStrokeWidth(2.5);
-
         fabBadge = new Label("0");
         fabBadge.setFont(Font.font("System", FontWeight.BOLD, 9));
         fabBadge.setTextFill(Color.WHITE);
-
         StackPane badge = new StackPane(badgeBg, fabBadge);
-        badge.setMaxSize(20, 20);
-        badge.setVisible(false);
+        badge.setMaxSize(20, 20); badge.setVisible(false);
         StackPane.setAlignment(badge, Pos.TOP_RIGHT);
-
         fabButton = new StackPane(bgCircle, iconLabel, badge);
         fabButton.setMaxSize(54, 54);
         fabButton.setStyle("-fx-cursor: hand;");
         StackPane.setAlignment(fabButton, Pos.BOTTOM_RIGHT);
-
         fabButton.setOnMouseEntered(e -> {
             ScaleTransition st = new ScaleTransition(Duration.millis(120), fabButton);
             st.setToX(1.1); st.setToY(1.1); st.play();
@@ -547,13 +567,10 @@ public class AdminRdvController {
             bgCircle.setFill(Color.web("#1a73e8"));
         });
         fabButton.setOnMouseClicked(e -> toggleChatPanel());
-
         chatListPanel = buildChatListPanel();
-        chatListPanel.setVisible(false);
-        chatListPanel.setManaged(false);
+        chatListPanel.setVisible(false); chatListPanel.setManaged(false);
         StackPane.setAlignment(chatListPanel, Pos.BOTTOM_RIGHT);
         chatListPanel.setTranslateY(-64);
-
         fabContainer.getChildren().addAll(chatListPanel, fabButton);
         refreshUnreadBadge();
     }
@@ -561,15 +578,7 @@ public class AdminRdvController {
     private VBox buildChatListPanel() {
         VBox panel = new VBox(0);
         panel.setMaxWidth(270);
-        panel.setStyle(
-                "-fx-background-color: white;" +
-                        "-fx-background-radius: 14;" +
-                        "-fx-border-color: #e2e8f0;" +
-                        "-fx-border-radius: 14;" +
-                        "-fx-border-width: 1;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 16, 0, 0, 4);"
-        );
-
+        panel.setStyle("-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #e2e8f0; -fx-border-radius: 14; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 16, 0, 0, 4);");
         HBox header = new HBox(8);
         header.setAlignment(Pos.CENTER_LEFT);
         header.setStyle("-fx-background-color: #1a73e8; -fx-background-radius: 14 14 0 0; -fx-padding: 12 16;");
@@ -577,21 +586,13 @@ public class AdminRdvController {
         title.setFont(Font.font("System", FontWeight.BOLD, 13));
         title.setTextFill(Color.WHITE);
         header.getChildren().addAll(new Circle(4, Color.web("#4ade80")), title);
-
         ScrollPane scroll = new ScrollPane();
-        scroll.setFitToWidth(true);
-        scroll.setPrefHeight(220);
+        scroll.setFitToWidth(true); scroll.setPrefHeight(220);
         scroll.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;");
-
         VBox liste = new VBox(2);
         liste.setStyle("-fx-padding: 8;");
-
         List<Integer> vus = new ArrayList<>();
-        for (rdv r : tousLesRdvs) {
-            int pid = r.getPatient_id();
-            if (!vus.contains(pid)) vus.add(pid);
-        }
-
+        for (rdv r : tousLesRdvs) { int pid = r.getPatient_id(); if (!vus.contains(pid)) vus.add(pid); }
         if (vus.isEmpty()) {
             Label empty = new Label("Aucune conversation");
             empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-padding: 20;");
@@ -605,7 +606,6 @@ public class AdminRdvController {
                 liste.getChildren().add(buildConvRow(nom, motif, unread, pid));
             }
         }
-
         scroll.setContent(liste);
         panel.getChildren().addAll(header, scroll);
         return panel;
@@ -617,27 +617,21 @@ public class AdminRdvController {
         row.setStyle("-fx-padding: 8 10; -fx-background-radius: 10; -fx-cursor: hand;");
         row.setOnMouseEntered(e -> row.setStyle("-fx-padding: 8 10; -fx-background-radius: 10; -fx-cursor: hand; -fx-background-color: #eff6ff;"));
         row.setOnMouseExited(e -> row.setStyle("-fx-padding: 8 10; -fx-background-radius: 10; -fx-cursor: hand;"));
-
         StackPane avPane = new StackPane();
         avPane.setMinSize(36, 36); avPane.setMaxSize(36, 36);
-        Circle c = new Circle(18);
-        c.setFill(Color.web(getAvatarColor(nom)));
+        Circle c = new Circle(18); c.setFill(Color.web(getAvatarColor(nom)));
         Label ini = new Label(getInitiales(nom));
         ini.setStyle("-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: white;");
         avPane.getChildren().addAll(c, ini);
-
         VBox txt = new VBox(3);
-        HBox.setHgrow(txt, Priority.ALWAYS);
-        txt.setMinWidth(0);
+        HBox.setHgrow(txt, Priority.ALWAYS); txt.setMinWidth(0);
         Label nl = new Label(nom);
         nl.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
         nl.setMaxWidth(Double.MAX_VALUE);
         Label ml = new Label(motif != null ? motif : "");
-        ml.setStyle("-fx-font-size: 11; -fx-text-fill: #64748b;");
-        ml.setMaxWidth(140);
+        ml.setStyle("-fx-font-size: 11; -fx-text-fill: #64748b;"); ml.setMaxWidth(140);
         txt.getChildren().addAll(nl, ml);
         row.getChildren().addAll(avPane, txt);
-
         if (unread > 0) {
             StackPane bp = new StackPane();
             bp.setMinSize(20, 20); bp.setMaxSize(20, 20);
@@ -647,49 +641,34 @@ public class AdminRdvController {
             bp.getChildren().addAll(bgBadge, cnt);
             row.getChildren().add(bp);
         }
-
         row.setOnMouseClicked(e -> {
             chatPanelVisible = false;
-            chatListPanel.setVisible(false);
-            chatListPanel.setManaged(false);
-            tousLesRdvs.stream()
-                    .filter(r -> r.getPatient_id() == pid)
-                    .findFirst()
-                    .ifPresent(r -> ouvrirChatAvecPatient(r));
+            chatListPanel.setVisible(false); chatListPanel.setManaged(false);
+            tousLesRdvs.stream().filter(r -> r.getPatient_id() == pid)
+                    .findFirst().ifPresent(r -> ouvrirChatAvecPatient(r));
         });
         return row;
     }
 
     private void toggleChatPanel() {
         chatPanelVisible = !chatPanelVisible;
-
         if (chatPanelVisible) {
             fabContainer.getChildren().remove(chatListPanel);
             chatListPanel = buildChatListPanel();
-            chatListPanel.setVisible(false);
-            chatListPanel.setManaged(false);
+            chatListPanel.setVisible(false); chatListPanel.setManaged(false);
             StackPane.setAlignment(chatListPanel, Pos.BOTTOM_RIGHT);
             chatListPanel.setTranslateY(-64);
             fabContainer.getChildren().add(0, chatListPanel);
-            chatListPanel.setManaged(true);
-            chatListPanel.setVisible(true);
-
+            chatListPanel.setManaged(true); chatListPanel.setVisible(true);
             FadeTransition ft = new FadeTransition(Duration.millis(180), chatListPanel);
             ft.setFromValue(0); ft.setToValue(1); ft.play();
-
             ScaleTransition st = new ScaleTransition(Duration.millis(180), chatListPanel);
-            st.setFromX(0.88); st.setFromY(0.88);
-            st.setToX(1.0); st.setToY(1.0);
-            st.setInterpolator(Interpolator.EASE_OUT);
-            st.play();
-
+            st.setFromX(0.88); st.setFromY(0.88); st.setToX(1.0); st.setToY(1.0);
+            st.setInterpolator(Interpolator.EASE_OUT); st.play();
         } else {
             FadeTransition ft = new FadeTransition(Duration.millis(150), chatListPanel);
             ft.setFromValue(1); ft.setToValue(0);
-            ft.setOnFinished(e -> {
-                chatListPanel.setVisible(false);
-                chatListPanel.setManaged(false);
-            });
+            ft.setOnFinished(e -> { chatListPanel.setVisible(false); chatListPanel.setManaged(false); });
             ft.play();
         }
     }
@@ -805,7 +784,6 @@ public class AdminRdvController {
         content.setPrefWidth(500); content.setStyle("-fx-padding: 25;");
         Label titre = new Label("✏ Modifier Date & Heure");
         titre.setStyle("-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
-
         Label lblDate = new Label("Date");
         lblDate.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #334155;");
         DatePicker datePicker = new DatePicker(LocalDate.parse(r.getDate()));
@@ -818,29 +796,23 @@ public class AdminRdvController {
                 }
             }
         });
-
         Label lblHeure = new Label("Heure");
         lblHeure.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #334155;");
         ComboBox<String> hc = new ComboBox<>();
         hc.setMaxWidth(Double.MAX_VALUE);
         hc.setStyle("-fx-font-size: 13; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #ddd;");
-        for (int h = 9; h <= 16; h++) {
-            hc.getItems().add(String.format("%02d:00", h));
-            hc.getItems().add(String.format("%02d:30", h));
-        }
+        for (int h = 9; h <= 16; h++) { hc.getItems().add(String.format("%02d:00", h)); hc.getItems().add(String.format("%02d:30", h)); }
         hc.getItems().add("17:00");
         if (r.getHdebut() != null && r.getHdebut().length() >= 5) {
             String hv = r.getHdebut().substring(0, 5);
             if (!hc.getItems().contains(hv)) hc.getItems().add(hv);
             hc.setValue(hv);
         }
-
         HBox dh = new HBox(15);
         VBox db = new VBox(5, lblDate, datePicker);
         VBox hb = new VBox(5, lblHeure, hc);
         HBox.setHgrow(db, Priority.ALWAYS); HBox.setHgrow(hb, Priority.ALWAYS);
         dh.getChildren().addAll(db, hb);
-
         String em = obtenirEmailPatient(r);
         CheckBox ck = new CheckBox("📧 Envoyer un email de modification à :");
         ck.setSelected(true); ck.setStyle("-fx-font-size: 13; -fx-text-fill: #334155;");
@@ -849,7 +821,6 @@ public class AdminRdvController {
         Label lblErr = new Label();
         lblErr.setStyle("-fx-text-fill: #dc2626; -fx-font-size: 12;");
         lblErr.setWrapText(true); lblErr.setVisible(false);
-
         content.getChildren().addAll(titre, dh, ck, le, lblErr);
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -857,7 +828,6 @@ public class AdminRdvController {
         btnE.setText("✏ Enregistrer");
         btnE.setStyle("-fx-background-color: #f97316; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 30; -fx-cursor: hand;");
         ((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("Annuler");
-
         btnE.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             lblErr.setVisible(false);
             if (datePicker.getValue() == null) { lblErr.setText("❌ Choisir une date"); lblErr.setVisible(true); event.consume(); return; }
@@ -873,7 +843,8 @@ public class AdminRdvController {
                 r.setDate(datePicker.getValue().toString()); r.setHdebut(hd); r.setHfin(String.format("%02d:%02d", hh, mm));
                 try (java.sql.PreparedStatement ps = Utils.MyDb.getInstance().getConnection()
                         .prepareStatement("UPDATE rdv SET date=?, hdebut=?, hfin=? WHERE id=?")) {
-                    ps.setString(1, r.getDate()); ps.setString(2, r.getHdebut()); ps.setString(3, r.getHfin()); ps.setInt(4, r.getId());
+                    ps.setString(1, r.getDate()); ps.setString(2, r.getHdebut());
+                    ps.setString(3, r.getHfin()); ps.setInt(4, r.getId());
                     ps.executeUpdate();
                 }
                 if (ck.isSelected()) envoyerEmailEnArrierePlan("modification", r, em, ad, ah);
@@ -915,7 +886,8 @@ public class AdminRdvController {
     private HBox creerLigneInfo(String label, String valeur) {
         HBox l = new HBox(10); l.setAlignment(Pos.CENTER_LEFT);
         Label lb = new Label(label); lb.setStyle("-fx-font-size: 12; -fx-text-fill: #64748b;"); lb.setMinWidth(110);
-        Label vl = new Label(valeur != null ? valeur : "N/A"); vl.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+        Label vl = new Label(valeur != null ? valeur : "N/A");
+        vl.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
         l.getChildren().addAll(lb, vl); return l;
     }
 
