@@ -39,13 +39,16 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
+// ── Import ajouté pour CreneauAiController ──
+import Controllers.CreneauAiController;
+
 public class AfficherRdvController {
 
     @FXML private VBox rdvListContainer;
     @FXML private TextField searchField;
     @FXML private Button btnAjouter;
     @FXML private Button btnHistorique;
-    @FXML private Button btnLancerVisio;       // ← NOUVEAU
+    @FXML private Button btnLancerVisio;
     @FXML private HBox carteProchainRdv;
     @FXML private Label prochainMedecin, prochainMotif, prochainMois, prochainJour, prochainHeure;
     @FXML private Label tabAVenir, tabPasses, tabAnnules;
@@ -66,7 +69,7 @@ public class AfficherRdvController {
     private YearMonth currentCalendarMonth = YearMonth.now();
     private VBox searchDropdown;
     private javafx.stage.Popup searchPopup;
-    private rdv prochainRdv; // ← NOUVEAU : stocker le prochain RDV
+    private rdv prochainRdv;
 
     private static final int PATIENT_ID_COURANT = 1;
 
@@ -239,12 +242,10 @@ public class AfficherRdvController {
     private void configurerBoutonVisio(rdv r) {
         if (btnLancerVisio == null) return;
 
-        // Arrêter toute animation en cours
         btnLancerVisio.setScaleX(1.0);
         btnLancerVisio.setScaleY(1.0);
 
         if (r == null) {
-            // Aucun RDV → cacher
             btnLancerVisio.setVisible(false);
             btnLancerVisio.setManaged(false);
             return;
@@ -255,18 +256,15 @@ public class AfficherRdvController {
         boolean estConfirme = r.getStatut().toLowerCase().contains("confirm");
 
         if (!estEnLigne) {
-            // Présentiel → cacher le bouton
             btnLancerVisio.setVisible(false);
             btnLancerVisio.setManaged(false);
             return;
         }
 
-        // C'est en ligne → toujours visible
         btnLancerVisio.setVisible(true);
         btnLancerVisio.setManaged(true);
 
         if (estAujourdHui && estConfirme) {
-            // ✅ Jour J + confirmé → ROUGE + pulsation
             btnLancerVisio.setStyle(
                     "-fx-background-color: #dc2626; -fx-text-fill: white; " +
                             "-fx-font-size: 12; -fx-font-weight: bold; " +
@@ -285,7 +283,6 @@ public class AfficherRdvController {
             btnLancerVisio.setOnAction(e -> lancerVisio(r));
 
         } else if (!estConfirme) {
-            // En attente → grisé
             btnLancerVisio.setStyle(
                     "-fx-background-color: #e2e8f0; -fx-text-fill: #94a3b8; " +
                             "-fx-font-size: 12; -fx-background-radius: 8; -fx-padding: 8 15;"
@@ -294,7 +291,6 @@ public class AfficherRdvController {
             btnLancerVisio.setText("📹 En attente de confirmation");
 
         } else {
-            // Confirmé mais pas encore aujourd'hui → bleu grisé
             btnLancerVisio.setStyle(
                     "-fx-background-color: rgba(255,255,255,0.3); -fx-text-fill: rgba(255,255,255,0.6); " +
                             "-fx-font-size: 12; -fx-background-radius: 8; " +
@@ -409,7 +405,6 @@ public class AfficherRdvController {
         Label medecinLabel = new Label(r.getMedecin()); medecinLabel.setStyle("-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #333;");
         Label motifLabel = new Label(r.getMotif()); motifLabel.setStyle("-fx-font-size: 13; -fx-text-fill: #777;");
 
-        // Badge type consultation dans la carte
         String typeIcon = "en_ligne".equalsIgnoreCase(r.getTypeConsultation()) ? "📹 En ligne" : "🏥 Présentiel";
         String typeBg   = "en_ligne".equalsIgnoreCase(r.getTypeConsultation()) ? "#eff6ff" : "#f0fdf4";
         String typeColor = "en_ligne".equalsIgnoreCase(r.getTypeConsultation()) ? "#1d4ed8" : "#15803d";
@@ -487,50 +482,183 @@ public class AfficherRdvController {
     }
 
     // ══════════════════════════════════════════════
-    //  POPUP AJOUTER
+    //  POPUP AJOUTER  ← MODIFICATION 1 intégrée
     // ══════════════════════════════════════════════
     private void ouvrirPopupAjouter() {
-        Dialog<ButtonType> dialog = new Dialog<>(); dialog.setTitle("Ajouter un rendez-vous");
-        VBox content = new VBox(18); content.setPrefWidth(520); content.setStyle("-fx-padding: 25;");
-        Label titre = new Label("📅  Ajouter un rendez-vous"); titre.setStyle("-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #333;");
-        Label lblMedecin = new Label("Médecin *"); lblMedecin.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
-        ComboBox<String> medecinCombo = new ComboBox<>(); medecinCombo.setPromptText("Choisir un médecin");
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Ajouter un rendez-vous");
+        VBox content = new VBox(18);
+        content.setPrefWidth(520);
+        content.setStyle("-fx-padding: 25;");
+
+        Label titre = new Label("📅  Ajouter un rendez-vous");
+        titre.setStyle("-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #333;");
+
+        // ── Champs médecin & motif (nécessaires avant le bouton IA) ──
+        Label lblMedecin = new Label("Médecin *");
+        lblMedecin.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
+        ComboBox<String> medecinCombo = new ComboBox<>();
+        medecinCombo.setPromptText("Choisir un médecin");
         medecinCombo.getItems().addAll("Dr. Sarah Amrani", "Dr. Ali Zouhaier", "Dr. M. Kallel");
-        medecinCombo.setMaxWidth(Double.MAX_VALUE); medecinCombo.setStyle("-fx-font-size: 13; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #ddd;");
-        Label lblMotif = new Label("Motif *"); lblMotif.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
-        ComboBox<String> motifCombo = new ComboBox<>(); motifCombo.setPromptText("Choisir un motif");
+        medecinCombo.setMaxWidth(Double.MAX_VALUE);
+        medecinCombo.setStyle("-fx-font-size: 13; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #ddd;");
+
+        Label lblMotif = new Label("Motif *");
+        lblMotif.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
+        ComboBox<String> motifCombo = new ComboBox<>();
+        motifCombo.setPromptText("Choisir un motif");
         motifCombo.getItems().addAll("Consultation", "Suivi médical", "Urgence", "Contrôle", "Autre");
-        motifCombo.setMaxWidth(Double.MAX_VALUE); motifCombo.setStyle("-fx-font-size: 13; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #ddd;");
-        Label lblDate = new Label("Date *"); lblDate.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
-        DatePicker datePicker = new DatePicker(); datePicker.setMaxWidth(Double.MAX_VALUE);
-        datePicker.setDayCellFactory(picker -> new DateCell() { @Override public void updateItem(LocalDate date, boolean empty) { super.updateItem(date, empty); if (date.isBefore(LocalDate.now())) { setDisable(true); setStyle("-fx-background-color: #f0f0f0; -fx-text-fill: #ccc;"); } } });
-        Label lblHeure = new Label("Heure *"); lblHeure.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
-        ComboBox<String> heureCombo = new ComboBox<>(); heureCombo.setMaxWidth(Double.MAX_VALUE);
-        for (int h = 9; h <= 16; h++) { heureCombo.getItems().add(String.format("%02d:00", h)); heureCombo.getItems().add(String.format("%02d:30", h)); } heureCombo.getItems().add("17:00");
-        HBox dateHeureBox = new HBox(15); VBox dateBox = new VBox(5, lblDate, datePicker); VBox heureBox = new VBox(5, lblHeure, heureCombo);
-        HBox.setHgrow(dateBox, Priority.ALWAYS); HBox.setHgrow(heureBox, Priority.ALWAYS); dateHeureBox.getChildren().addAll(dateBox, heureBox);
-        Label lblMessage = new Label("Message (optionnel)"); lblMessage.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
-        TextArea messageArea = new TextArea(); messageArea.setPrefRowCount(3); messageArea.setStyle("-fx-font-size: 13; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #ddd;");
-        Label lblErreur = new Label(); lblErreur.setStyle("-fx-text-fill: #e53935; -fx-font-size: 12;"); lblErreur.setVisible(false);
-        content.getChildren().addAll(titre, new Separator(), lblMedecin, medecinCombo, lblMotif, motifCombo, dateHeureBox, lblMessage, messageArea, lblErreur);
-        dialog.getDialogPane().setContent(content); dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        Button btnOk = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK); btnOk.setText("Confirmer");
+        motifCombo.setMaxWidth(Double.MAX_VALUE);
+        motifCombo.setStyle("-fx-font-size: 13; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #ddd;");
+
+        Label lblErreur = new Label();
+        lblErreur.setStyle("-fx-text-fill: #e53935; -fx-font-size: 12;");
+        lblErreur.setVisible(false);
+
+        // ── Bouton IA — suggérer un créneau ──
+        Button btnIA = new Button("✨ Suggérer un créneau avec l'IA");
+        btnIA.setStyle(
+                "-fx-background-color: linear-gradient(to right, #7c3aed, #6d28d9); " +
+                        "-fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; " +
+                        "-fx-background-radius: 10; -fx-padding: 12 20; -fx-cursor: hand; " +
+                        "-fx-max-width: Infinity;"
+        );
+        btnIA.setOnMouseEntered(e -> btnIA.setStyle(
+                "-fx-background-color: linear-gradient(to right, #6d28d9, #5b21b6); " +
+                        "-fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; " +
+                        "-fx-background-radius: 10; -fx-padding: 12 20; -fx-cursor: hand; " +
+                        "-fx-max-width: Infinity;"
+        ));
+        btnIA.setOnMouseExited(e -> btnIA.setStyle(
+                "-fx-background-color: linear-gradient(to right, #7c3aed, #6d28d9); " +
+                        "-fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; " +
+                        "-fx-background-radius: 10; -fx-padding: 12 20; -fx-cursor: hand; " +
+                        "-fx-max-width: Infinity;"
+        ));
+
+        btnIA.setOnAction(e -> {
+            if (medecinCombo.getValue() == null) {
+                lblErreur.setText("❌ Choisissez d'abord un médecin pour les suggestions IA");
+                lblErreur.setVisible(true);
+                return;
+            }
+            if (motifCombo.getValue() == null) {
+                lblErreur.setText("❌ Choisissez d'abord un motif pour les suggestions IA");
+                lblErreur.setVisible(true);
+                return;
+            }
+
+            String nomChoisi = medecinCombo.getValue();
+            medecin medecinChoisi = tousLesMedecins.stream()
+                    .filter(m -> ("Dr. " + m.getPrenom() + " " + m.getNom()).equals(nomChoisi)
+                            || (m.getPrenom() + " " + m.getNom()).equals(nomChoisi))
+                    .findFirst()
+                    .orElse(null);
+
+            if (medecinChoisi == null) {
+                medecinChoisi = new medecin();
+                String[] parts = nomChoisi.replace("Dr. ", "").split(" ", 2);
+                medecinChoisi.setPrenom(parts.length > 0 ? parts[0] : nomChoisi);
+                medecinChoisi.setNom(parts.length > 1 ? parts[1] : "");
+                medecinChoisi.setSpecialite("Médecine générale");
+            }
+
+            dialog.close();
+
+            medecin medecinFinal = medecinChoisi;
+            String motifFinal = motifCombo.getValue();
+
+            Stage parentStage = (Stage) rdvListContainer.getScene().getWindow();
+            CreneauAiController.afficher(
+                    parentStage,
+                    medecinFinal,
+                    motifFinal,
+                    PATIENT_ID_COURANT,
+                    () -> chargerDonnees()
+            );
+        });
+
+        // Séparateur visuel
+        Separator sepIA = new Separator();
+        Label lblOuManuel = new Label("— ou remplissez manuellement —");
+        lblOuManuel.setStyle("-fx-font-size: 11; -fx-text-fill: #94a3b8;");
+        lblOuManuel.setMaxWidth(Double.MAX_VALUE);
+        lblOuManuel.setAlignment(Pos.CENTER);
+
+        // Champs date / heure / message
+        Label lblDate = new Label("Date *");
+        lblDate.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
+        DatePicker datePicker = new DatePicker();
+        datePicker.setMaxWidth(Double.MAX_VALUE);
+        datePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                if (date.isBefore(LocalDate.now())) { setDisable(true); setStyle("-fx-background-color: #f0f0f0; -fx-text-fill: #ccc;"); }
+            }
+        });
+
+        Label lblHeure = new Label("Heure *");
+        lblHeure.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
+        ComboBox<String> heureCombo = new ComboBox<>();
+        heureCombo.setMaxWidth(Double.MAX_VALUE);
+        for (int h = 9; h <= 16; h++) { heureCombo.getItems().add(String.format("%02d:00", h)); heureCombo.getItems().add(String.format("%02d:30", h)); }
+        heureCombo.getItems().add("17:00");
+
+        HBox dateHeureBox = new HBox(15);
+        VBox dateBox = new VBox(5, lblDate, datePicker);
+        VBox heureBox = new VBox(5, lblHeure, heureCombo);
+        HBox.setHgrow(dateBox, Priority.ALWAYS);
+        HBox.setHgrow(heureBox, Priority.ALWAYS);
+        dateHeureBox.getChildren().addAll(dateBox, heureBox);
+
+        Label lblMessage = new Label("Message (optionnel)");
+        lblMessage.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
+        TextArea messageArea = new TextArea();
+        messageArea.setPrefRowCount(3);
+        messageArea.setStyle("-fx-font-size: 13; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #ddd;");
+
+        // Assemblage du content : titre → séparateur → médecin → motif → btnIA → séparateur visuel → date/heure → message → erreur
+        content.getChildren().addAll(
+                titre, new Separator(),
+                lblMedecin, medecinCombo,
+                lblMotif, motifCombo,
+                btnIA, lblOuManuel, sepIA,
+                dateHeureBox,
+                lblMessage, messageArea,
+                lblErreur
+        );
+
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        Button btnOk = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        btnOk.setText("Confirmer");
         btnOk.setStyle("-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 35; -fx-cursor: hand;");
         ((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("Annuler");
+
         btnOk.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             if (medecinCombo.getValue() == null) { lblErreur.setText("❌ Veuillez choisir un médecin"); lblErreur.setVisible(true); event.consume(); return; }
             if (motifCombo.getValue() == null)   { lblErreur.setText("❌ Veuillez choisir un motif");   lblErreur.setVisible(true); event.consume(); return; }
             if (datePicker.getValue() == null)   { lblErreur.setText("❌ Veuillez choisir une date");   lblErreur.setVisible(true); event.consume(); return; }
             if (heureCombo.getValue() == null)   { lblErreur.setText("❌ Veuillez choisir une heure");  lblErreur.setVisible(true); event.consume(); return; }
             try {
-                String hdebut = heureCombo.getValue(); String[] parts = hdebut.split(":"); int h = Integer.parseInt(parts[0]); int m = Integer.parseInt(parts[1]);
-                m += 30; if (m >= 60) { m -= 60; h++; } String hfin = String.format("%02d:%02d", h, m);
-                rdv rv = new rdv(datePicker.getValue().toString(), hdebut, hfin, "en_attente", motifCombo.getValue(), medecinCombo.getValue(), messageArea.getText().trim(), 1, 1);
+                String hdebut = heureCombo.getValue();
+                String[] parts = hdebut.split(":");
+                int h = Integer.parseInt(parts[0]);
+                int m = Integer.parseInt(parts[1]);
+                m += 30; if (m >= 60) { m -= 60; h++; }
+                String hfin = String.format("%02d:%02d", h, m);
+                rdv rv = new rdv(datePicker.getValue().toString(), hdebut, hfin, "en_attente",
+                        motifCombo.getValue(), medecinCombo.getValue(), messageArea.getText().trim(), 1, 1);
                 rv.setTypeConsultation("presentiel");
-                rdvService.insert(rv); chargerDonnees(); afficherSucces("RDV ajouté avec succès !");
+                rdvService.insert(rv);
+                chargerDonnees();
+                afficherSucces("RDV ajouté avec succès !");
             } catch (SQLException ex) { afficherErreur("Erreur : " + ex.getMessage()); event.consume(); }
         });
-        activerBlur(); dialog.showAndWait(); desactiverBlur();
+
+        activerBlur();
+        dialog.showAndWait();
+        desactiverBlur();
     }
 
     // ══════════════════════════════════════════════
@@ -691,32 +819,92 @@ public class AfficherRdvController {
         afficherMedecinsListe(filtres);
     }
 
+    // ══════════════════════════════════════════════
+    //  CRÉER CARTE MÉDECIN  ← MODIFICATION 2 intégrée
+    // ══════════════════════════════════════════════
     private HBox creerCarteMedecin(medecin m, boolean showQrButton) {
         HBox carte = new HBox(12); carte.setAlignment(Pos.CENTER_LEFT); carte.setStyle("-fx-padding: 8 5; -fx-cursor: hand;");
         carte.setOnMouseEntered(e -> carte.setStyle("-fx-padding: 8 5; -fx-cursor: hand; -fx-background-color: #f0f7ff; -fx-background-radius: 8;"));
         carte.setOnMouseExited(e -> carte.setStyle("-fx-padding: 8 5; -fx-cursor: hand;"));
-        String initiales = ""; if (m.getPrenom() != null && !m.getPrenom().isEmpty()) initiales += m.getPrenom().substring(0, 1).toUpperCase(); if (m.getNom() != null && !m.getNom().isEmpty()) initiales += m.getNom().substring(0, 1).toUpperCase(); if (initiales.isEmpty()) initiales = "?";
+
+        String initiales = "";
+        if (m.getPrenom() != null && !m.getPrenom().isEmpty()) initiales += m.getPrenom().substring(0, 1).toUpperCase();
+        if (m.getNom() != null && !m.getNom().isEmpty()) initiales += m.getNom().substring(0, 1).toUpperCase();
+        if (initiales.isEmpty()) initiales = "?";
+
         String[] colors = {"#1a73e8", "#e53935", "#f59e0b", "#16a34a", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316"};
         String avatarColor = colors[Math.abs((m.getNom() + m.getPrenom()).hashCode()) % colors.length];
-        Label avatar = new Label(initiales); avatar.setMinWidth(40); avatar.setMinHeight(40); avatar.setMaxWidth(40); avatar.setMaxHeight(40); avatar.setAlignment(Pos.CENTER);
+        Label avatar = new Label(initiales);
+        avatar.setMinWidth(40); avatar.setMinHeight(40); avatar.setMaxWidth(40); avatar.setMaxHeight(40);
+        avatar.setAlignment(Pos.CENTER);
         avatar.setStyle("-fx-background-color: " + avatarColor + "; -fx-background-radius: 20; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13;");
+
         VBox infos = new VBox(2); HBox.setHgrow(infos, Priority.ALWAYS);
-        Label nomLabel = new Label("Dr. " + m.getPrenom().substring(0, 1) + ". " + m.getNom()); nomLabel.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
-        Label specLabel = new Label(m.getSpecialite() != null ? m.getSpecialite() : ""); specLabel.setStyle("-fx-font-size: 11; -fx-text-fill: #999;");
-        if (m.getDisponible() == 1) { Label dispo = new Label("●"); dispo.setStyle("-fx-text-fill: #16a34a; -fx-font-size: 8;"); HBox nomRow = new HBox(5, nomLabel, dispo); nomRow.setAlignment(Pos.CENTER_LEFT); infos.getChildren().addAll(nomRow, specLabel); }
-        else infos.getChildren().addAll(nomLabel, specLabel);
-        Button btnChat = new Button("💬"); btnChat.setTooltip(new Tooltip("Envoyer un message"));
+        Label nomLabel = new Label("Dr. " + m.getPrenom().substring(0, 1) + ". " + m.getNom());
+        nomLabel.setStyle("-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #333;");
+        Label specLabel = new Label(m.getSpecialite() != null ? m.getSpecialite() : "");
+        specLabel.setStyle("-fx-font-size: 11; -fx-text-fill: #999;");
+        if (m.getDisponible() == 1) {
+            Label dispo = new Label("●"); dispo.setStyle("-fx-text-fill: #16a34a; -fx-font-size: 8;");
+            HBox nomRow = new HBox(5, nomLabel, dispo); nomRow.setAlignment(Pos.CENTER_LEFT);
+            infos.getChildren().addAll(nomRow, specLabel);
+        } else {
+            infos.getChildren().addAll(nomLabel, specLabel);
+        }
+
+        // ── Bouton IA sur la carte médecin ──
+        Button btnIACarte = new Button("✨");
+        btnIACarte.setTooltip(new Tooltip("Suggérer un créneau avec l'IA"));
+        btnIACarte.setStyle(
+                "-fx-background-color: #ede9fe; -fx-font-size: 13; " +
+                        "-fx-cursor: hand; -fx-padding: 5 8; -fx-background-radius: 8;"
+        );
+        btnIACarte.setOnMouseEntered(ev -> btnIACarte.setStyle(
+                "-fx-background-color: #7c3aed; -fx-text-fill: white; " +
+                        "-fx-font-size: 13; -fx-cursor: hand; -fx-padding: 5 8; -fx-background-radius: 8;"
+        ));
+        btnIACarte.setOnMouseExited(ev -> btnIACarte.setStyle(
+                "-fx-background-color: #ede9fe; -fx-font-size: 13; " +
+                        "-fx-cursor: hand; -fx-padding: 5 8; -fx-background-radius: 8;"
+        ));
+        btnIACarte.setOnAction(ev -> {
+            ChoiceDialog<String> choixMotif = new ChoiceDialog<>(
+                    "Consultation",
+                    "Consultation", "Suivi médical", "Urgence", "Contrôle", "Autre"
+            );
+            choixMotif.setTitle("Motif du RDV");
+            choixMotif.setHeaderText("Quel est le motif de votre rendez-vous ?");
+            choixMotif.setContentText("Motif :");
+            choixMotif.showAndWait().ifPresent(motifChoisi -> {
+                Stage parentStage = (Stage) rdvListContainer.getScene().getWindow();
+                CreneauAiController.afficher(
+                        parentStage,
+                        m,
+                        motifChoisi,
+                        PATIENT_ID_COURANT,
+                        () -> chargerDonnees()
+                );
+            });
+        });
+
+        // Bouton chat existant
+        Button btnChat = new Button("💬");
+        btnChat.setTooltip(new Tooltip("Envoyer un message"));
         btnChat.setStyle("-fx-background-color: #e3f2fd; -fx-font-size: 14; -fx-cursor: hand; -fx-padding: 5 8; -fx-background-radius: 8;");
         btnChat.setOnMouseEntered(e -> btnChat.setStyle("-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-font-size: 14; -fx-cursor: hand; -fx-padding: 5 8; -fx-background-radius: 8;"));
         btnChat.setOnMouseExited(e -> btnChat.setStyle("-fx-background-color: #e3f2fd; -fx-font-size: 14; -fx-cursor: hand; -fx-padding: 5 8; -fx-background-radius: 8;"));
         btnChat.setOnAction(e -> ouvrirChatAvecMedecin(m));
-        Button btnQr = new Button("📱"); btnQr.setTooltip(new Tooltip("Voir QR Code"));
+
+        Button btnQr = new Button("📱");
+        btnQr.setTooltip(new Tooltip("Voir QR Code"));
         btnQr.setStyle("-fx-background-color: transparent; -fx-font-size: 16; -fx-cursor: hand; -fx-padding: 4;");
         btnQr.setOnMouseEntered(e -> btnQr.setStyle("-fx-background-color: #e0f2fe; -fx-font-size: 16; -fx-cursor: hand; -fx-padding: 4; -fx-background-radius: 8;"));
         btnQr.setOnMouseExited(e -> btnQr.setStyle("-fx-background-color: transparent; -fx-font-size: 16; -fx-cursor: hand; -fx-padding: 4;"));
         btnQr.setOnAction(e -> ouvrirPopupQrMedecin(m));
-        carte.getChildren().addAll(avatar, infos, btnChat, btnQr);
-        carte.setOnMouseClicked(e -> { if (e.getTarget() != btnQr && e.getTarget() != btnChat) ouvrirPopupQrMedecin(m); });
+
+        // Ordre : avatar → infos → ✨IA → 💬chat → 📱QR
+        carte.getChildren().addAll(avatar, infos, btnIACarte, btnChat, btnQr);
+        carte.setOnMouseClicked(e -> { if (e.getTarget() != btnQr && e.getTarget() != btnChat && e.getTarget() != btnIACarte) ouvrirPopupQrMedecin(m); });
         return carte;
     }
 
